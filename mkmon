@@ -1,0 +1,4 @@
+gcc -c hdsmon.c `pkg-config gtk+-3.0 --cflags` `pkg-config glib-2.0 --cflags`
+gcc -c gtkut.c `pkg-config gtk+-3.0 --cflags` `pkg-config glib-2.0 --cflags`
+gcc -c efs.c `pkg-config gtk+-3.0 --cflags` `pkg-config glib-2.0 --cflags` `pkg-config cairo --cflags`
+gcc -o hdsmon hdsmon.o gtkut.o efs.o `pkg-config gtk+-3.0 --libs` `pkg-config glib-2.0 --libs` `pkg-config cairo --libs` -lm
