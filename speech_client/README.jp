@@ -1,4 +1,4 @@
-■linuxでのstviewのテキスト読み上げに関するメモ (日本語版)
+■linux / macOS でのstviewのテキスト読み上げに関するメモ (日本語版)
                                     2019.06.21  A.Tajitsu
 
 クライアントから音声読み出しをする設定
@@ -12,7 +12,9 @@ linux のNotePC等に音声読み出しソフトをいれてHDSのステータ�
 ##############################################################
 
 
-1. 音声読み出しソフトのインストール
+1. 音声読み出しソフトのインストール(linuxのみ)
+ ※macOSの場合はOS標準で読み上げコマンドがある(say コマンド)のでこのインストールは必要ない
+
  日本語でよみたい場合は open-jtalk がよいようである
  ubuntuの場合
   $ apt install open-jtalk open-jtalk-mecab-naist-jdic hts-voice-nitech-jp-atr503-m001
@@ -27,6 +29,8 @@ linux のNotePC等に音声読み出しソフトをいれてHDSのステータ�
 
 
 2. sp.c のコンパイル
+ ※ macOSの場合は say コマンドを使うように sp.c の冒頭部の #define を一箇所修正する.
+
  同梱のsp.cを
   $ gcc -o sp sp.c 
  でコンパイルして $HOME/bin にいれておく
@@ -36,7 +40,7 @@ linux のNotePC等に音声読み出しソフトをいれてHDSのステータ�
 
 
 使い方
-1. linux 環境のターミナルで speech を起動
+1. linux / macOS 環境のターミナルで speech を起動
      $ speech
      スクリプトを開始しました。ファイルは /tmp/speech です
    となる.
