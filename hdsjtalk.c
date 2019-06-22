@@ -20,10 +20,30 @@
 #include<pwd.h>
 #include<sys/types.h>
 #include<string.h>
+#include<locale.h>
 #include<math.h>
 
 
-#include"hdstalk.h"    /* hdstalk������إå� */
+#include"hdstalk.h"    /* hdsjtalk用設定ヘッダ */
+
+gchar *setting_name_j[NUM_SET]={
+  "ノンスタンダード", 
+  "スタンダード UB", 
+  "スタンダード UA", 
+  "スタンダード BA", 
+  "スタンダード BC", 
+  "スタンダード YA", 
+  "スタンダード IツーB",
+  "スタンダード YD", 
+  "スタンダード YB",
+  "スタンダード YC", 
+  "スタンダード IツーA", 
+  "スタンダード RA", 
+  "スタンダード RB", 
+  "スタンダード NIRC",
+  "スタンダード NIRB", 
+  "スタンダード NIRA"
+};
 
 
 void usage();
@@ -63,7 +83,7 @@ void usage(){
 
 void talk_message(gchar* str){
   if(macopix_flag)  g_print("#macopix# %s\n",str);
-  g_print("#say# %s\n",str);
+  g_print("#say#%s\n",str);
   usleep(strlen(str)*150*1000);
 }
 
@@ -75,7 +95,7 @@ gint time_func(hds_param *hds){
     fprintf(stderr,"STATUS read error\n");
   }
   else if (status_stat.st_mtime !=up_time){
-    // modified time���������Ȥ��Τߺ��ɤ߹��� 
+    // modified timeが新しいときのみ再読み込み 
 #ifdef DEBUG2
       g_print("Status reading...\n");
 #endif
@@ -122,8 +142,8 @@ void param_read(hds_param *hds){
       if(ret){
 	hds->cross_val[i_set]=g_strtod(strtok(ret+strlen(sp),":"), NULL);
 	//printf("%s : %d\n",
-	//      setting_name[i_set],
-	//     hds->cross_val[i_set]);
+	//     setting_name[i_set],
+	//   hds->cross_val[i_set]);
 	break;
       }
     }
@@ -227,10 +247,10 @@ void update_gui(hds_param *hds){
   // OBS mode
   if(hds->old1.mode_obs!=hds->now.mode_obs){
     if(hds->now.mode_obs==1){
-      talk_message("OBS mode ON.");
+      talk_message("OBSモードをオンにしました");
     }
     else{
-      talk_message("OBS mode OFF.");
+      talk_message("OBSモードをオフにしました");
     }
   }
 
@@ -249,70 +269,100 @@ void update_gui(hds_param *hds){
 
   // Slit
   if(fabs(hds->old1.slit_width-hds->now.slit_width)>0.0001){
-    sprintf(tmp, "Slit width is %7.2f arcsec.", hds->now.slit_width);
+    sprintf(tmp, "スリット幅を %7.2f秒に変更しました", hds->now.slit_width);
     talk_message(tmp);
   }
 
   if(fabs(hds->old1.slit_length-hds->now.slit_length)>0.0001){
-    sprintf(tmp, "Slit length is %7.2f arcsec.", hds->now.slit_length);
+    sprintf(tmp, "スリット長を %7.2f秒に変更しました", hds->now.slit_length);
     talk_message(tmp);
   }
 
   // Camera
   if(fabs(hds->old1.cam_rotate-hds->now.cam_rotate)>0.0001){
-    sprintf(tmp, "Camera ratation is %5d arcsec.", (int)(hds->now.cam_rotate*3600));
+    if(hds->now.cam_rotate<0){
+      sprintf(tmp, "カメラ回転角を マイナス%5d秒に変更しました", -(int)(hds->now.cam_rotate*3600));
+    }
+    else{
+      sprintf(tmp, "カメラ回転角を %5d秒に変更しました", (int)(hds->now.cam_rotate*3600));
+    }
     talk_message(tmp);
   }
 
   if(fabs(hds->old1.cam_z-hds->now.cam_z)>0.0001){
-    sprintf(tmp, "Camera Z is %7d micron.", (int)(hds->now.cam_z*1000));
+    if(hds->now.cam_z<0){
+      sprintf(tmp, "カメラ Z を マイナス%7dミクロンに変更しました", -(int)(hds->now.cam_z*1000));
+    }
+    else{
+      sprintf(tmp, "カメラ Z を %7dミクロンに変更しました", (int)(hds->now.cam_z*1000));
+    }
     talk_message(tmp);
   }
 
   if(fabs(hds->old1.cam_x-hds->now.cam_x)>0.0001){
-    sprintf(tmp, "Camera X is %5d arcsec.", (int)(hds->now.cam_x*3600));
+    if(hds->now.cam_x<0){
+      sprintf(tmp, "カメラ X を マイナス%5d秒に変更しました", -(int)(hds->now.cam_x*3600));
+    }
+    else{
+      sprintf(tmp, "カメラ X を %5d秒に変更しました", (int)(hds->now.cam_x*3600));
+    }
     talk_message(tmp);
   }
 
   if(fabs(hds->old1.cam_y-hds->now.cam_y)>0.0001){
-    sprintf(tmp, "Camera Y is %5d arcsec.", (int)(hds->now.cam_y*3600));
+    if(hds->now.cam_y<0){
+      sprintf(tmp, "カメラ Y を マイナス%5d秒に変更しました", -(int)(hds->now.cam_y*3600));
+    }
+    else{
+      sprintf(tmp, "カメラ Y を %5d秒に変更しました", (int)(hds->now.cam_y*3600));
+    }
     talk_message(tmp);
   }
 
 
   // Wavelength
   if((hds->old1.setting!=hds->now.setting)){
-    sprintf(tmp, "Wavelength setting is %s.", setting_name[hds->now.setting]);
+    sprintf(tmp, "波長設定を %sに変更しました", setting_name_j[hds->now.setting]);
     talk_message(tmp);
   }
 
   if(fabs(hds->old1.col_scan-hds->now.col_scan)>0.0001){
-    sprintf(tmp, "Cross disperser scan angle is %5d arcsec.", (int)(hds->now.col_scan*3600));
+    if(hds->now.col_scan<0){
+      sprintf(tmp, "クロスディスパーザーのスキャン角度を マイナス%5d秒に変更しました", -(int)(hds->now.col_scan*3600));
+    }
+    else{
+      sprintf(tmp, "クロスディスパーザーのスキャン角度を %5d秒に変更しました", (int)(hds->now.col_scan*3600));
+    }
     talk_message(tmp);
   }
 
   if(fabs(hds->old1.col_echelle-hds->now.col_echelle)>0.0001){
-    sprintf(tmp, "Eshelle angle is %5d arcsec.", (int)(hds->now.col_echelle*3600));
+    if(hds->now.col_echelle<0){
+      sprintf(tmp, "エシェルのスキャン角度を マイナス%5d秒に変更しました.", -(int)(hds->now.col_echelle*3600));
+    }
+    else{
+      sprintf(tmp, "エシェルのスキャン角度を %5d秒に変更しました.", (int)(hds->now.col_echelle*3600));
+    }
     talk_message(tmp);
   }
 
   if(strcmp(hds->old1.slit_filter1,hds->now.slit_filter1)!=0){
-    sprintf(tmp, "Filter 1 is %s.", hds->now.slit_filter1);
+    sprintf(tmp, "フィルター 1を %sに変更しました", hds->now.slit_filter1);
     talk_message(tmp);
   }
 
   if(strcmp(hds->old1.slit_filter2,hds->now.slit_filter2)!=0){
-    sprintf(tmp, "Filter 2 is %s.", hds->now.slit_filter2);
+    sprintf(tmp, "フィルター 2を %sに変更しました", hds->now.slit_filter2);
     talk_message(tmp);
   }
 
   if((hds->old1.col_col!=hds->now.col_col)){
     switch(hds->now.col_col){
     case COL_RED:
-      talk_message("Collimator is Red.");
+      talk_message("コリメーターを 赤に変更しました");
       break;
     case COL_BLUE:
-      talk_message("Collimator is Blue.");
+      talk_message("コリメーターを 青に変更しました");
       break;
     }
   }
@@ -320,13 +370,13 @@ void update_gui(hds_param *hds){
   if((hds->old1.col_cross!=hds->now.col_cross)){
     switch(hds->now.col_cross){
     case COL_RED:
-      talk_message("Cross Disperser is Red.");
+      talk_message("クロスディスパーザーを 赤に変更しました");
       break;
     case COL_BLUE:
-      talk_message("Cross Disperser is Blue.");
+      talk_message("クロスディスパーザーを 青に変更しました");
       break;
     case COL_MIRROR:
-      talk_message("Cross Disperser is Mirror.");
+      talk_message("クロスディスパーザーを 平面鏡にしました");
       break;
     }
   }
@@ -336,22 +386,22 @@ void update_gui(hds_param *hds){
   // I2-Cell
   if(hds->old1.mode_i2!=hds->now.mode_i2){
     if(hds->now.mode_i2==1){
-      talk_message("I2 Cell mode is ON..");
+      talk_message("アイツーセルモードをオンにしました");
     }
     else{
-      talk_message("I2 Cell mode is OFF..");
+      talk_message("アイツーセルモードをオフにしました");
     }
   }
 
   if((hds->old1.option_i2!=hds->now.option_i2)){
     if(hds->now.option_i2==0){
-      talk_message("I2 Cell is Out..");
+      talk_message("アイツーセルがこうろからはずれました");
     }
     else if(hds->now.option_i2==1){
-      talk_message("I2 Cell is inserted.");
+      talk_message("アイツーセルをこうろに挿入しました");
     }
     else{
-      talk_message("I2 Cell position is unknown.");
+      talk_message("アイツーセルのポジションがわかりません");
     }
   }
 
@@ -359,70 +409,58 @@ void update_gui(hds_param *hds){
   // LM
   if(hds->old1.mode_lm!=hds->now.mode_lm){
     if(hds->now.mode_lm==1){
-      talk_message("Light Monitor mode is ON..");
+      talk_message("こうりょうモニターモードをオンにしました");
     }
     else{
-      talk_message("Light Monitor mode is OFF..");
+      talk_message("こうりょうモニターモードをオフにしました");
     }
   }
 
   if((hds->old1.option_lm!=hds->now.option_lm)){
     if(hds->now.option_lm==0){
-      talk_message("Light Monitor is Out..");
+      talk_message("こうりょうモニターがこうろからはずれました");
     }
     else if(hds->now.option_lm==1){
-      talk_message("Light Monitor is In.");
+      talk_message("こうりょうモニターをこうろに挿入しました");
     }
     else{
-      talk_message("Light Monitor position is unknown.");
+      talk_message("こうりょうモニターのポジションがわかりません");
     }
   }
 
   // Image Slicer
   if(hds->old1.is_unit!=hds->now.is_unit){
     if(hds->now.is_unit==0){
-      talk_message("Image Slicer is unused.");
+      talk_message("イメージスライサーを使用していません");
     }
     else{
-      sprintf(tmp, "Image Slicer Unit Number %d is equipped.", (int)hds->now.is_unit);
+      sprintf(tmp, "イメージスライサー ナンバー%dを使用します", (int)hds->now.is_unit);
       talk_message(tmp);
-      sprintf(tmp, "Image Slicer Dimension is %4.2lf arcsec times %d.",
+      sprintf(tmp, "イメージスライサーは %4.2lf秒かける%dです",
 	      hds->now.is_width*2.0,hds->now.is_slic);
       talk_message(tmp);
     }
   }
 
-  if((hds->old1.option_lm!=hds->now.option_lm)){
-    if(hds->now.option_lm==0){
-      talk_message("Light Monitor is Out..");
-    }
-    else if(hds->now.option_lm==1){
-      talk_message("Light Monitor is In.");
-    }
-    else{
-      talk_message("Light Monitor position is unknown.");
-    }
-  }
-
 
   // Shutter
-  set_oc(hds->now.shutter_shutter, hds->old1.shutter_shutter, "Main Shutter"); 
+  set_oc(hds->now.shutter_shutter, hds->old1.shutter_shutter, "シャッター"); 
 
-  set_oc(hds->now.shutter_hu, hds->old1.shutter_hu, "Upper Haltmann Shutter");
-  set_oc(hds->now.shutter_hl, hds->old1.shutter_hu, "Lower Haltmann Shutter");
+  set_oc(hds->now.shutter_hu, hds->old1.shutter_hu, "上部ハルトマンシャッター");
+  set_oc(hds->now.shutter_hl, hds->old1.shutter_hu, "下部ハルトマンシャッター");
 
 
   // Cover
-  set_oc(hds->now.cover_colb, hds->old1.cover_colb, "Blue Collimator Cover");
-  set_oc(hds->now.cover_colr, hds->old1.cover_colr, "Red Collimator Cover");
-  set_oc(hds->now.cover_crossb, hds->old1.cover_crossb, "Blue Cross Cover");
-  set_oc(hds->now.cover_crossr, hds->old1.cover_crossr, "Red Cross Cover");
-  set_oc(hds->now.cover_mirr, hds->old1.cover_mirr, "Mirror Cross Cover");
-  set_oc(hds->now.cover_lens1, hds->old1.cover_lens1, "First Lens Cover");
-  set_oc(hds->now.cover_lens2, hds->old1.cover_lens2, "Second Lens Cover");
-  set_oc(hds->now.cover_lens3, hds->old1.cover_lens3, "Third Lens Cover");
-  set_oc(hds->now.cover_cam1, hds->old1.cover_cam1, "First Camera Cover");
-  set_oc(hds->now.cover_cam2, hds->old1.cover_cam2, "Second Camera Cover");
+  set_oc(hds->now.cover_colb, hds->old1.cover_colb, "コリメーター 青のカバー");
+  set_oc(hds->now.cover_colr, hds->old1.cover_colr, "コリメーター 赤のカバー");
+  set_oc(hds->now.cover_crossb, hds->old1.cover_crossb, "クロスディスパーザー 青のカバー");
+  set_oc(hds->now.cover_crossr, hds->old1.cover_crossr, "クロスディスパーザー 赤のカバー");
+  set_oc(hds->now.cover_mirr, hds->old1.cover_mirr, "クロスディスパーザー 平面鏡のカバー");
+  set_oc(hds->now.cover_lens1, hds->old1.cover_lens1, "第一レンズカバー");
+  set_oc(hds->now.cover_lens2, hds->old1.cover_lens2, "第二レンズカバー");
+  set_oc(hds->now.cover_lens3, hds->old1.cover_lens3, "第三レンズカバー");
+  set_oc(hds->now.cover_cam1, hds->old1.cover_cam1, "第一カメラミラーカバー");
+  set_oc(hds->now.cover_cam2, hds->old1.cover_cam2, "第二カメラミラーカバー");
 
   hds->old2=hds->old1;
   hds->old1=hds->now;
@@ -484,7 +522,7 @@ void init_hds(stat_param *stat){
 int get_setting(hds_param *hds){
   gint i_set;
   gint scan_val=(gint)(hds->now.col_scan*3600.);
-  
+
   if((hds->now.col_col==1)&&(hds->now.col_cross==1)){ // BLUE
     for(i_set=STDUB; i_set<=STDYA; i_set++){
       if(absvalue(scan_val-hds->cross_val[i_set])<E_SCAN){
@@ -522,15 +560,15 @@ void set_oc(int oc_status, int oc_old, gchar* name)
 
   if(oc_status!=oc_old){
     if(oc_status==0){
-      sprintf(tmp, "%s Close", name);
+      sprintf(tmp, "%sをとじました", name);
       talk_message(tmp);
     }
     else if(oc_status==1){
-      sprintf(tmp, "%s Open", name);
+      sprintf(tmp, "%sを開けました", name);
       talk_message(tmp);
     }
     else{
-      sprintf(tmp, "%s status is unknown", name);
+      sprintf(tmp, "%sのステータスがわかりません", name);
       talk_message(tmp);
     }
   }
@@ -581,7 +619,7 @@ void file_search(hds_param *hds){
 #endif
 
   read_line=0;
-  /* �������� */
+  /* 更新日時 */
   strcpy(hds->update_time,get_param(buf[read_line]," = "));
   read_line++;
   /* Driving */
@@ -592,7 +630,7 @@ void file_search(hds_param *hds){
   g_print("   reading mode\n");
 #endif
 
-  /*** �⡼�� ***/
+  /*** モード ***/
   read_line++;
   /* OBS-MODE */
   hds->now.mode_obs=get_status(buf[read_line]," = ");
@@ -776,7 +814,7 @@ void file_search(hds_param *hds){
 }
 
 
-/* �ѥ�᡼�� �꡼�ɴؿ� */
+/* パラメータ リード関数 */
 char *get_param(char * buf , char *token){
   static char b[BUFFSIZE];
   char *c=NULL;
@@ -789,7 +827,7 @@ char *get_param(char * buf , char *token){
 }
   
 
-/* status �ѥ�᡼�� �꡼�ɴؿ�  1:Yes 0:No -1:UNKNOWN */
+/* status パラメータ リード関数  1:Yes 0:No -1:UNKNOWN */
 int get_status(char *buf, char *token){
   static char b[BUFFSIZE];
   char *c=NULL;
@@ -809,7 +847,7 @@ int get_status(char *buf, char *token){
   }
 }
 
-/* status �ѥ�᡼�� �꡼�ɴؿ� for ImgSlicer  1:IS#1 0:NOUSE */
+/* status パラメータ リード関数 for ImgSlicer  1:IS#1 0:NOUSE */
 int get_status_is(char *buf,  char *token){
   static char b[BUFFSIZE];
   char *c=NULL;
@@ -820,7 +858,7 @@ int get_status_is(char *buf,  char *token){
   return((int)atoi(b));
 }
 
-/* status �ѥ�᡼�� �꡼�ɴؿ�����2  1:1 0:0 -1:UNKNOWN */
+/* status パラメータ リード関数その2  1:1 0:0 -1:UNKNOWN */
 int get_status2(char *buf,  char *token){
   static char b[BUFFSIZE];
   char *c=NULL;
@@ -840,7 +878,7 @@ int get_status2(char *buf,  char *token){
   }
 }
 
-/* OPEN/CLOSE �ѥ�᡼�� �꡼�ɴؿ�  1:OPEN 0:CLOSE -1:UNKNOWN */
+/* OPEN/CLOSE パラメータ リード関数  1:OPEN 0:CLOSE -1:UNKNOWN */
 int get_oc(char *buf, char *token){
   static char b[BUFFSIZE];
   char *c=NULL;
@@ -860,7 +898,7 @@ int get_oc(char *buf, char *token){
   }
 }
 
-/* OPEN/CLOSE �ѥ�᡼�� �꡼�ɴؿ����ˤ�2  1:OPEN 0:CLOSE -1:UNKNOWN */
+/* OPEN/CLOSE パラメータ リード関数そにょ2  1:OPEN 0:CLOSE -1:UNKNOWN */
 int *get_oc2(char *buf, char *token){
   static int b[3];
   char *c=NULL;
@@ -894,7 +932,7 @@ int *get_oc2(char *buf, char *token){
   return(b);
 }
 
-/* BLUE/RED �ѥ�᡼�� �꡼�ɴؿ�  2:MIRROR 1:BLUE 0:RED -1:UNKNOWN */
+/* BLUE/RED パラメータ リード関数  2:MIRROR 1:BLUE 0:RED -1:UNKNOWN */
 int get_br(char *buf, char *token){
   static char b[BUFFSIZE];
   char *c=NULL;
@@ -918,7 +956,7 @@ int get_br(char *buf, char *token){
 }
 
 
-/* IN/OUT �ѥ�᡼�� �꡼�ɴؿ�  1:IN 0:OUT -1:UNKNOWN */
+/* IN/OUT パラメータ リード関数  1:IN 0:OUT -1:UNKNOWN */
 int get_io(char *buf, char *token){
   static char b[BUFFSIZE];
   char *c=NULL;
@@ -939,7 +977,7 @@ int get_io(char *buf, char *token){
 }
 
 
-/* ʸ�������ʸ���� */
+/* 文字列の大文字化 */
 char *capiterize(char *c_in){
   static char b[BUFFSIZE];
   int i;
@@ -1214,6 +1252,8 @@ int main(int argc, char* argv[]){
   char rcfile[BUFFSIZE];
   int i_opt;
 
+  setlocale(LC_ALL, "ja_JP.UTF-8");
+
   macopix_flag=FALSE;
   
   i_opt = 1;
@@ -1237,7 +1277,7 @@ int main(int argc, char* argv[]){
 
   init_hds(&hds->old1);
   init_hds(&hds->old2);
-  file_search(hds); /* �ǽ�ΰ�� */
+  file_search(hds); /* 最初の一回 */
 
   hds->init_status=FALSE;
 

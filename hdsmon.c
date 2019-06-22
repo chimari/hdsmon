@@ -9,6 +9,7 @@
 
 //GdkFont *font_frame, *font_label, *font_small;
 
+gchar *span_gray1, *span_black;
 
 gint time_func(gpointer data){
   struct stat status_stat;
@@ -41,7 +42,7 @@ void update_gui(hds_param *hds){
   gtk_label_set_markup(GTK_LABEL(hds->w_update_time),hds->update_time);
 
   // OBS mode
-  if(hds->mode_obs==1){
+  if(hds->now.mode_obs==1){
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(hds->w_mode_obs),TRUE);
   }
   else{
@@ -62,52 +63,62 @@ void update_gui(hds_param *hds){
     
 
   // Slit
-  if(hds->old1.slit_width!=hds->now.slit_width){
-    tmp=g_strdup_printf("<b>Slit</b>     [<i>R</i>=%6d]", 
+  if(fabs(hds->old1.slit_width-hds->now.slit_width)>0.001){
+    tmp=g_strdup_printf("%s<b>Slit</b>     [<i>R</i> = %6d]</span>", 
+			span_black,
 			(int)(3.6e4/hds->now.slit_width));
     gtk_label_set_markup(GTK_LABEL(gtk_frame_get_label_widget(GTK_FRAME(hds->w_slit_frame))),
 			 tmp);
     g_free(tmp);
 
-    tmp=g_strdup_printf("%7.4f[arcsec]", hds->now.slit_width);
+    tmp=g_strdup_printf("%s%6.3f \"</span>",
+			span_black,
+			hds->now.slit_width);
     gtk_label_set_markup(GTK_LABEL(hds->w_slit_width),tmp);
     g_free(tmp);
 
-    tmp=g_strdup_printf("%5d[&#xB5;m]",
+    tmp=g_strdup_printf("%s%5d &#xB5;m</span>",
+			span_gray1,
 			(int)(hds->now.slit_width/2*1e3));
     gtk_label_set_markup(GTK_LABEL(hds->w_bslit_width),tmp);
     g_free(tmp);
     
     change_color(hds->w_lslit_width, COLOR_RED, TRUE, FALSE);
   }
-  else if(hds->old2.slit_width!=hds->old1.slit_width) {
+  else if(fabs(hds->old2.slit_width-hds->old1.slit_width)>0.0001) {
     change_color(hds->w_lslit_width, COLOR_BROWN, TRUE, FALSE);
   }
 
-  if(hds->old1.slit_length!=hds->now.slit_length){
-    tmp=g_strdup_printf("%7.4f[arcsec]", hds->now.slit_length);
+  if(fabs(hds->old1.slit_length-hds->now.slit_length)>0.0001){
+    tmp=g_strdup_printf("%s%6.3f \"</span>",
+			span_black,
+			hds->now.slit_length);
     gtk_label_set_markup(GTK_LABEL(hds->w_slit_length),tmp);
     g_free(tmp);
 
-    tmp=g_strdup_printf("%5d[&#xB5;m]", (int)(hds->now.slit_length/2*1e3));
+    tmp=g_strdup_printf("%s%5d &#xB5;m</span>", 
+			span_gray1,
+			(int)(hds->now.slit_length/2*1e3));
     gtk_label_set_markup(GTK_LABEL(hds->w_bslit_length),tmp);
     g_free(tmp);
 
-    gtk_label_set_markup(GTK_LABEL(hds->w_lslit_width),
-			 "<span color=\"#FF0000\"><b>Width</b></span>");
     change_color(hds->w_lslit_length, COLOR_RED, TRUE, FALSE);
   }
-  else if(hds->old2.slit_length!=hds->old1.slit_length) {
+  else if(fabs(hds->old2.slit_length-hds->old1.slit_length)>0.0001) {
     change_color(hds->w_lslit_length, COLOR_BROWN, TRUE, FALSE);
   }
 
   // Camera
-  if(hds->old1.cam_rotate!=hds->now.cam_rotate){
-    tmp=g_strdup_printf("%7.4f[deg]", hds->now.cam_rotate);
+  if(fabs(hds->old1.cam_rotate-hds->now.cam_rotate)>0.0001){
+    tmp=g_strdup_printf("%s%7.4f &#xB0;</span>", 
+			span_black,
+			hds->now.cam_rotate);
     gtk_label_set_markup(GTK_LABEL(hds->w_cam_rotate),tmp);
     g_free(tmp);
 
-    tmp=g_strdup_printf("%5d[sec]", (int)(hds->now.cam_rotate*3600));
+    tmp=g_strdup_printf("%s%5d \"</span>", 
+			span_gray1,
+			(int)(hds->now.cam_rotate*3600));
     gtk_label_set_markup(GTK_LABEL(hds->w_bcam_rotate),tmp);
     g_free(tmp);
 
@@ -117,44 +128,54 @@ void update_gui(hds_param *hds){
     change_color(hds->w_lcam_rotate, COLOR_GRAY2, TRUE, FALSE);
   }
 
-  if(hds->old1.cam_z!=hds->now.cam_z){
-    tmp=g_strdup_printf("%d[&#xB5;m]", (int)(hds->now.cam_z*1000));
+  if(fabs(hds->old1.cam_z-hds->now.cam_z)>0.0001){
+    tmp=g_strdup_printf("%s%d &#xB5;m</span>",
+			span_black,
+			(int)(hds->now.cam_z*1000));
     gtk_label_set_markup(GTK_LABEL(hds->w_cam_z),tmp);
     g_free(tmp);
 
     change_color(hds->w_lcam_z, COLOR_RED, TRUE, FALSE);
   }
-  else if(hds->old2.cam_z!=hds->old1.cam_z) {
+  else if(fabs(hds->old2.cam_z-hds->old1.cam_z)>0.0001) {
     change_color(hds->w_lcam_z, COLOR_BROWN, TRUE, FALSE);
   }
 
-  if((hds->old1.cam_x!=hds->now.cam_x)){
-    tmp=g_strdup_printf("%7.4f[deg]", hds->now.cam_x);
+  if(fabs(hds->old1.cam_x-hds->now.cam_x)>0.0001){
+    tmp=g_strdup_printf("%s%7.4f &#xB0;</span>",
+			span_black,
+			hds->now.cam_x);
     gtk_label_set_markup(GTK_LABEL(hds->w_cam_x),tmp);
     g_free(tmp);
 
-    tmp=g_strdup_printf("%5d[sec]", (int)(hds->now.cam_x*3600));
+    tmp=g_strdup_printf("%s%5d \"</span>",
+			span_gray1,
+			(int)(hds->now.cam_x*3600));
     gtk_label_set_markup(GTK_LABEL(hds->w_bcam_x),tmp);
     g_free(tmp);
 
     change_color(hds->w_lcam_x, COLOR_RED, TRUE, FALSE);
   }
-  else if(hds->old2.cam_x!=hds->old1.cam_z) {
+  else if(fabs(hds->old2.cam_x-hds->old1.cam_z)>0.0001) {
     change_color(hds->w_lcam_x, COLOR_GRAY2, TRUE, FALSE);
   }
 
-  if((hds->old1.cam_y!=hds->now.cam_y)){
-    tmp=g_strdup_printf("%7.4f[deg]", hds->now.cam_y);
+  if(fabs(hds->old1.cam_y-hds->now.cam_y)>0.0001){
+    tmp=g_strdup_printf("%s%7.4f &#xB0;</span>",
+			span_black,
+			hds->now.cam_y);
     gtk_label_set_markup(GTK_LABEL(hds->w_cam_y),tmp);
     g_free(tmp);
 
-    tmp=g_strdup_printf("%5d[sec]", (int)(hds->now.cam_y*3600));
+    tmp=g_strdup_printf("%s%5d \"</span>",
+			span_gray1,
+			(int)(hds->now.cam_y*3600));
     gtk_label_set_markup(GTK_LABEL(hds->w_bcam_y),tmp);
     g_free(tmp);
 
     change_color(hds->w_lcam_y, COLOR_RED, TRUE, FALSE);
   }
-  else if(hds->old2.cam_y!=hds->old1.cam_y) {
+  else if(fabs(hds->old2.cam_y-hds->old1.cam_y)>0.0001) {
     change_color(hds->w_lcam_y, COLOR_GRAY2, TRUE, FALSE);
   }
 
@@ -162,10 +183,11 @@ void update_gui(hds_param *hds){
   // Wavelength
   if((hds->old1.setting!=hds->now.setting)){
     if(hds->now.setting==0){
-      tmp=g_strdup("<b>Wavelength setting</b>     [Non-Standard]");
+      tmp=g_strdup_printf("%s<b>Wavelength setting</b>     [Non-Standard]</span>", span_black);
     }
     else{
-      tmp=g_strdup_printf("<b>Wavelength setting</b>     [Std%s]",
+      tmp=g_strdup_printf("%s<b>Wavelength setting</b>     [Std%s]</span>",
+			  span_black,
 			  setting_name[hds->now.setting]);
     }
     gtk_label_set_markup(GTK_LABEL(gtk_frame_get_label_widget(GTK_FRAME(hds->w_col_frame))),
@@ -178,12 +200,16 @@ void update_gui(hds_param *hds){
 				filter_tip[hds->now.setting]);
   }
 
-  if((hds->old1.col_scan!=hds->now.col_scan)){
-    tmp=g_strdup_printf("%7.4f[deg]", hds->now.col_scan);
+  if(fabs(hds->old1.col_scan-hds->now.col_scan)>0.0001){
+    tmp=g_strdup_printf("%s%7.4f &#xB0;</span>",
+			span_black,
+			hds->now.col_scan);
     gtk_label_set_markup(GTK_LABEL(hds->w_col_scan),tmp);
     g_free(tmp);
 
-    tmp=g_strdup_printf("%5d[sec]", (int)(hds->now.col_scan*3600));
+    tmp=g_strdup_printf("%s%5d \"</span>", 
+			span_gray1,
+			(int)(hds->now.col_scan*3600));
     gtk_label_set_markup(GTK_LABEL(hds->w_bcol_scan),tmp);
     g_free(tmp);
 
@@ -215,39 +241,67 @@ void update_gui(hds_param *hds){
       break;
       
     default:
-      tmp=g_strdup("dCross is unknown...]");
+      tmp=g_strdup("dCross is unknown...");
       break;
     }
 
     gtk_widget_set_tooltip_text(hds->w_lcol_scan,tmp);
     g_free(tmp);
+
+    switch(hds->now.col_col){
+    case 0:
+      tmp=g_strdup_printf("CamZ for Red = %s",hds->camz_r);
+      break;
+      
+    case 1:
+      tmp=g_strdup_printf("CamZ for Blue = %s",hds->camz_b);
+      break;
+      
+    default:
+      tmp=g_strdup("CamZ is unknown...");
+      break;
+    }
+
+    gtk_widget_set_tooltip_text(hds->w_lcam_z,tmp);
+    g_free(tmp);
+
   }
-  else if(hds->old2.col_scan!=hds->old1.col_scan) {
+  else if(fabs(hds->old2.col_scan-hds->old1.col_scan)>0.0001) {
     change_color(hds->w_lcol_scan, COLOR_BROWN, TRUE, FALSE);
   }
 
-  if((hds->old1.col_echelle!=hds->now.col_echelle)){
-    tmp=g_strdup_printf("%7.4f[deg]", hds->now.col_echelle);
+
+
+  if(fabs(hds->old1.col_echelle-hds->now.col_echelle)>0.0001){
+    tmp=g_strdup_printf("%s%7.4f &#xB0;</span>",
+			span_black,
+			hds->now.col_echelle);
     gtk_label_set_markup(GTK_LABEL(hds->w_col_echelle),tmp);
     g_free(tmp);
 
-    tmp=g_strdup_printf("%5d[sec]", (int)(hds->now.col_echelle*3600));
+    tmp=g_strdup_printf("%s%5d \"</span>", 
+			span_gray1,
+			(int)(hds->now.col_echelle*3600));
     gtk_label_set_markup(GTK_LABEL(hds->w_bcol_echelle),tmp);
     g_free(tmp);
 
     change_color(hds->w_lcol_echelle, COLOR_RED, TRUE, FALSE);
   }
-  else if(hds->old2.col_echelle!=hds->old1.col_echelle) {
+  else if(fabs(hds->old2.col_echelle-hds->old1.col_echelle)>0.0001) {
     change_color(hds->w_lcol_echelle, COLOR_GRAY2, TRUE, FALSE);
   }
 
   if((strcmp(hds->old1.slit_filter1,hds->now.slit_filter1)!=0)||
      (strcmp(hds->old1.slit_filter2,hds->now.slit_filter2)!=0)){
-    tmp=g_strdup_printf("%s", hds->now.slit_filter1);
+    tmp=g_strdup_printf("%s%s</span>", 
+			span_black,
+			hds->now.slit_filter1);
     gtk_label_set_markup(GTK_LABEL(hds->w_col_filter),tmp);
     g_free(tmp);
 
-    tmp=g_strdup_printf("%s", hds->now.slit_filter2);
+    tmp=g_strdup_printf("%s%s</span>",
+			span_black,
+			hds->now.slit_filter2);
     gtk_label_set_markup(GTK_LABEL(hds->w_bcol_filter),tmp);
     g_free(tmp);
 
@@ -277,7 +331,7 @@ void update_gui(hds_param *hds){
 
 
   // I2-Cell
-  if(hds->mode_i2==1){
+  if(hds->now.mode_i2==1){
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(hds->w_mode_i2),TRUE);
   }
   else{
@@ -294,7 +348,7 @@ void update_gui(hds_param *hds){
 
 
   // LM-Cell
-  if(hds->mode_lm==1){
+  if(hds->now.mode_lm==1){
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(hds->w_mode_lm),TRUE);
   }
   else{
@@ -328,11 +382,11 @@ void update_gui(hds_param *hds){
   
   if((strncmp(hds->now.slit_filter1, "FREE", 4)==0)&&
      (strncmp(hds->now.slit_filter2, "FREE", 4)==0)){
-    tmp= g_strdup_printf("(<i>ideal pos = %+.3lfV</i>)", 
+    tmp= g_strdup_printf("(<i>ideal pos = %+.3lf V</i>)", 
 			 ideal_colv0[hds->now.is_unit]); 
   }
   else{
-    tmp= g_strdup_printf("(<i>ideal pos = %+.3lfV</i>)", 
+    tmp= g_strdup_printf("(<i>ideal pos = %+.3lf V</i>)", 
 			 ideal_colv1[hds->now.is_unit]); 
   }
   gtk_label_set_markup(GTK_LABEL(hds->w_colv),tmp);
@@ -342,7 +396,7 @@ void update_gui(hds_param *hds){
   gtk_label_set_markup(GTK_LABEL(hds->w_temp_i2),tmp);
   g_free(tmp);
 
-  tmp=g_strdup_printf("%5.2f[&#xB0;C]", hds->now.temp_i2o);
+  tmp=g_strdup_printf("%5.2f &#xB0;C", hds->now.temp_i2o);
   gtk_label_set_markup(GTK_LABEL(hds->w_btemp_i2),tmp);
   g_free(tmp);
 
@@ -350,16 +404,20 @@ void update_gui(hds_param *hds){
   gtk_label_set_markup(GTK_LABEL(hds->w_temp_nr),tmp);
   g_free(tmp);
 
-  tmp=g_strdup_printf("%5.2f[&#xB0;C]", hds->now.temp_nr2);
+  tmp=g_strdup_printf("%5.2f &#xB0;C", hds->now.temp_nr2);
   gtk_label_set_markup(GTK_LABEL(hds->w_btemp_nr),tmp);
   g_free(tmp);
 
 
-  tmp=g_strdup_printf("%5.1f[K]", hds->now.temp_ccd);
+  tmp=g_strdup_printf("%s%5.1f K</span>", 
+		      span_black,
+		      hds->now.temp_ccd);
   gtk_label_set_markup(GTK_LABEL(hds->w_temp_ccd),tmp);
   g_free(tmp);
 
-  tmp=g_strdup_printf("(%s)", hds->temp_time);
+  tmp=g_strdup_printf("%s(%s)</span>", 
+		      span_gray1,
+		      hds->temp_time);
   gtk_label_set_markup(GTK_LABEL(hds->w_btemp_ccd),tmp);
   g_free(tmp);
 
@@ -422,7 +480,6 @@ void update_gui(hds_param *hds){
   
   hds->old1=hds->now;
   //cp_stat(&hds->old1, &hds->now);
-
 
   hds->init_status=TRUE;
   return;
@@ -661,8 +718,7 @@ void gui_init(hds_param *hds){
   GtkWidget *frame, *frame2;
   GtkWidget *table, *table1, *table2;
   GtkWidget *label, *button, *hbox;
-
-
+  gchar *tmp;
 
   // Main Window 
   hds->w_top = gtk_window_new(GTK_WINDOW_TOPLEVEL);
@@ -685,7 +741,7 @@ void gui_init(hds_param *hds){
   hds->w_mode_obs = gtk_check_button_new_with_label("OBS mode");
   gtk_widget_set_sensitive(hds->w_mode_obs,FALSE);
   gtkut_table_attach(table, hds->w_mode_obs,1,3,0,1,
-		     GTK_SHRINK, 0, 0);
+		     GTK_SHRINK, GTK_SHRINK, 0, 0);
 
   // Driving
   hds->w_status_driving = gtkut_label_new("<span color=\"#FF0000\"><b>    Driving!!    </b></span>");
@@ -760,7 +816,7 @@ void gui_init(hds_param *hds){
 
   
   ////////////////////////////// camera frame /////////////////////////
-  frame = gtkut_frame_new("<b>Camera</b>");
+  frame = gtkut_frame_new("<span color=\"#000000\"><b>Camera</b></span>");
   gtkut_table_attach(table, frame,0,2,2,4,
 		     GTK_SHRINK, GTK_SHRINK, 0, 0);
 
@@ -795,6 +851,22 @@ void gui_init(hds_param *hds){
   gtkut_pos(hds->w_lcam_z, POS_END, POS_CENTER);
   gtkut_table_attach(table1, hds->w_lcam_z,0,1,1,2,
 		     GTK_FILL|GTK_EXPAND, GTK_SHRINK, 0, 0);
+  switch(hds->now.col_col){
+  case 0:
+    tmp=g_strdup_printf("CamZ for Red = %s",hds->camz_r);
+    break;
+    
+  case 1:
+    tmp=g_strdup_printf("CamZ for Blue = %s",hds->camz_b);
+    break;
+    
+  default:
+    tmp=g_strdup("CamZ is unknown...");
+    break;
+  }
+
+  gtk_widget_set_tooltip_text(hds->w_lcam_z,tmp);
+  g_free(tmp);
 
   hds->w_cam_z = gtkut_label_new("----[&#xB5;m]");
   gtkut_pos(hds->w_cam_z, POS_END, POS_CENTER);
@@ -847,7 +919,7 @@ void gui_init(hds_param *hds){
 
 
   //////////////////////// Shutter frame ///////////////////////
-  frame = gtkut_frame_new("<b>Shutter</b>");
+  frame = gtkut_frame_new("<span color=\"#000000\"><b>Shutter</b></span>");
   gtkut_table_attach(table, frame,0,2,4,5,
 		     GTK_SHRINK, GTK_SHRINK, 0, 0);
 
@@ -918,42 +990,41 @@ void gui_init(hds_param *hds){
   gtkut_table_attach(table1, hds->w_bcol_filter,3,4,0,1,
 		     GTK_FILL|GTK_EXPAND, GTK_SHRINK, 0, 0);
 
-  // Echelle scan
-  hds->w_lcol_echelle = gtkut_label_new("<span color=\"#444444\"><b>Echelle</b></span> ");
-  gtkut_pos(hds->w_lcol_echelle, POS_END, POS_CENTER);
-  gtkut_table_attach(table1, hds->w_lcol_echelle,0,1,1,2,
-		     GTK_FILL|GTK_EXPAND, GTK_SHRINK, 0, 0);
-
-  hds->w_col_echelle = gtkut_label_new("--.----[deg]");
-  gtkut_pos(hds->w_col_echelle, POS_END, POS_CENTER);
-  gtkut_table_attach(table1, hds->w_col_echelle,1,2,1,2,
-		     GTK_FILL|GTK_EXPAND, GTK_SHRINK, 0, 0);
-
-  label = gtkut_label_new("<span color=\"#888888\"> = </span>");
-  gtkut_pos(label, POS_END, POS_CENTER);
-  gtkut_table_attach(table1, label,2,3,1,2,
-		     GTK_SHRINK, GTK_SHRINK, 0, 0);
-
-  hds->w_bcol_echelle = gtkut_label_new("<span color=\"#888888\" size=\"smaller\">-----[sec]</span>");
-  gtkut_pos(hds->w_bcol_echelle, POS_END, POS_CENTER);
-  gtkut_table_attach(table1, hds->w_bcol_echelle,3,4,1,2,
-		     GTK_FILL|GTK_EXPAND, GTK_SHRINK, 0, 0);
-
-
   // Collimator
   hds->w_lcol_col = gtkut_label_new("<span color=\"#444444\"><b>Collimator</b></span> ");
   gtkut_pos(hds->w_lcol_col, POS_END, POS_CENTER);
-  gtkut_table_attach(table1, hds->w_lcol_col,0,1,2,3,
+  gtkut_table_attach(table1, hds->w_lcol_col,0,1,1,2,
 		     GTK_FILL|GTK_EXPAND, GTK_SHRINK, 0, 0);
 
   hds->w_col_col = gtkut_label_new("------");
   gtkut_pos(hds->w_col_col, POS_END, POS_CENTER);
-  gtkut_table_attach(table1, hds->w_col_col,1,2,2,3,
+  gtkut_table_attach(table1, hds->w_col_col,1,2,1,2,
 		     GTK_FILL|GTK_EXPAND, GTK_SHRINK, 0, 0);
 
   hds->w_colv = gtkut_label_new("(<i>ideal pos = ------</i>)");
   gtkut_pos(hds->w_colv, POS_CENTER, POS_CENTER);
-  gtkut_table_attach(table1, hds->w_colv,1,4,3,4,
+  gtkut_table_attach(table1, hds->w_colv,1,4,2,3,
+		     GTK_FILL|GTK_EXPAND, GTK_SHRINK, 0, 0);
+
+  // Echelle scan
+  hds->w_lcol_echelle = gtkut_label_new("<span color=\"#444444\"><b>Echelle</b></span> ");
+  gtkut_pos(hds->w_lcol_echelle, POS_END, POS_CENTER);
+  gtkut_table_attach(table1, hds->w_lcol_echelle,0,1,3,4,
+		     GTK_FILL|GTK_EXPAND, GTK_SHRINK, 0, 0);
+
+  hds->w_col_echelle = gtkut_label_new("--.----[deg]");
+  gtkut_pos(hds->w_col_echelle, POS_END, POS_CENTER);
+  gtkut_table_attach(table1, hds->w_col_echelle,1,2,3,4,
+		     GTK_FILL|GTK_EXPAND, GTK_SHRINK, 0, 0);
+
+  label = gtkut_label_new("<span color=\"#888888\"> = </span>");
+  gtkut_pos(label, POS_END, POS_CENTER);
+  gtkut_table_attach(table1, label,2,3,3,4,
+		     GTK_SHRINK, GTK_SHRINK, 0, 0);
+
+  hds->w_bcol_echelle = gtkut_label_new("<span color=\"#888888\" size=\"smaller\">-----[sec]</span>");
+  gtkut_pos(hds->w_bcol_echelle, POS_END, POS_CENTER);
+  gtkut_table_attach(table1, hds->w_bcol_echelle,3,4,3,4,
 		     GTK_FILL|GTK_EXPAND, GTK_SHRINK, 0, 0);
 
   // Cross Disperser
@@ -990,7 +1061,7 @@ void gui_init(hds_param *hds){
 
 
   //////////////////// i2 frame //////////////////////////
-  frame = gtkut_frame_new("<b>I2-cell</b>");
+  frame = gtkut_frame_new("<span color=\"#000000\"><b>I2-cell</b></span>");
   gtkut_table_attach(table, frame,0,1,5,6,
 		     GTK_SHRINK, GTK_SHRINK, 0, 0);
 
@@ -1018,7 +1089,7 @@ void gui_init(hds_param *hds){
 
 
   /////////////////////// lm frame  /////////////////////////////
-  frame = gtkut_frame_new("<b>Light Monitor</b>");
+  frame = gtkut_frame_new("<span color=\"#000000\"><b>Light Monitor</b></span>");
   gtkut_table_attach(table, frame,1,3,5,6,
 		     GTK_SHRINK, GTK_SHRINK, 0, 0);
 
@@ -1045,7 +1116,7 @@ void gui_init(hds_param *hds){
 
 
   ////////////////////////// IS frame  ///////////////////////////
-  frame = gtkut_frame_new("<b>Image Slicer</b>");
+  frame = gtkut_frame_new("<span color=\"#000000\"><b>Image Slicer</b></span>");
   gtkut_table_attach(table, frame,3,5,5,6,
 		     GTK_SHRINK, GTK_SHRINK, 0, 0);
 
@@ -1063,7 +1134,7 @@ void gui_init(hds_param *hds){
 
   
   /////////////////// temp frame /////////////////////////////
-  frame = gtkut_frame_new("<b>Temperature</b>");
+  frame = gtkut_frame_new("<span color=\"#000000\"><b>Temperature</b></span>");
   gtkut_table_attach(table, frame,2,5,3,5,
 		     GTK_SHRINK, GTK_SHRINK, 0, 0);
 
@@ -1132,7 +1203,7 @@ void gui_init(hds_param *hds){
 
 
   //////////////////// cover frame  //////////////////////////
-  frame = gtkut_frame_new("<b>Cover</b>");
+  frame = gtkut_frame_new("<span color=\"#000000\"><b>Cover</b></span>");
   gtkut_table_attach(table, frame,0,5,6,7,
 		     GTK_SHRINK, GTK_SHRINK, FALSE, FALSE);
 
@@ -1307,7 +1378,6 @@ void change_color(GtkWidget *widget, gint color,
 }
 
 
-
 void param_read(hds_param *hds){
   FILE *fp_read;
   gint i_set;
@@ -1323,6 +1393,8 @@ void param_read(hds_param *hds){
   hds->dcr_r=0;
   hds->ec0_b=900;
   hds->ec0_r=900;
+  hds->camz_b=g_strdup("Cam Z (B)");
+  hds->camz_r=g_strdup("Cam Z (R)");
 
   hds->efs_mode=EFS_PLOT_EFS;
   hds->efs_bin=BIN_11;
@@ -1410,6 +1482,33 @@ void param_read(hds_param *hds){
   }
   g_free(sp);
 
+  fseek(fp_read, 0, SEEK_SET);
+  sp=g_strdup("#CamZ_B:");
+  while(!feof(fp_read)){
+    fgets(buf,BUFFSIZE-1,fp_read);
+    ret=strstr(buf,sp);
+    if(ret){
+      if(hds->camz_b) g_free(hds->camz_b);
+      hds->camz_b=g_strdup(strtok(ret+strlen(sp),":"));
+      break;
+    }
+  }
+  g_free(sp);
+
+  fseek(fp_read, 0, SEEK_SET);
+  sp=g_strdup("#CamZ_R:");
+  while(!feof(fp_read)){
+    fgets(buf,BUFFSIZE-1,fp_read);
+    ret=strstr(buf,sp);
+    if(ret){
+      if(hds->camz_r) g_free(hds->camz_r);
+      hds->camz_b=g_strdup(strtok(ret+strlen(sp),":"));
+      break;
+    }
+  }
+  g_free(sp);
+
+
   fclose(fp_read);
 }
 
@@ -1467,13 +1566,13 @@ void file_search(hds_param *hds){
   /*** ¥â¡¼¥É ***/
   read_line++;
   /* OBS-MODE */
-  hds->mode_obs=get_status(buf[read_line]," = ");
+  hds->now.mode_obs=get_status(buf[read_line]," = ");
   read_line++;
   /* I2-CELL */
-  hds->mode_i2=get_status2(buf[read_line]," = ");
+  hds->now.mode_i2=get_status2(buf[read_line]," = ");
   read_line++;
   /* Light Monitor */
-  hds->mode_lm=get_status2(buf[read_line]," = ");
+  hds->now.mode_lm=get_status2(buf[read_line]," = ");
   read_line++;
 
 #ifdef DEBUG2
@@ -1850,33 +1949,33 @@ void debug_print(hds_param *hds){
   }
 
 
-  if(hds->mode_obs==1){
+  if(hds->now.mode_obs==1){
     printf("OBS-MODE        = Yes\n");
   }
-  else if(hds->mode_obs==0){
+  else if(hds->now.mode_obs==0){
     printf("OBS-MODE        = No\n");
   }
-  else if(hds->mode_obs==-1){
+  else if(hds->now.mode_obs==-1){
     printf("OBS-MODE        = Unknown\n");
   }
 
-  if(hds->mode_i2==1){
+  if(hds->now.mode_i2==1){
     printf("I2-CELL         = Yes\n");
   }
-  else if(hds->mode_i2==0){
+  else if(hds->now.mode_i2==0){
     printf("I2-CELL         = No\n");
   }
-  else if(hds->mode_i2==-1){
+  else if(hds->now.mode_i2==-1){
     printf("I2-CELL         = Unknown\n");
   }
 
-  if(hds->mode_lm==1){
+  if(hds->now.mode_lm==1){
     printf("Light Monitor   = Yes\n");
   }
-  else if(hds->mode_lm==0){
+  else if(hds->now.mode_lm==0){
     printf("Light Monitor   = No\n");
   }
-  else if(hds->mode_lm==-1){
+  else if(hds->now.mode_lm==-1){
     printf("Light Monitor   = Unknown\n");
   }
 
@@ -2093,6 +2192,9 @@ int main(int argc, char* argv[]){
   gint timer;
   hds_param *hds;
   char rcfile[BUFFSIZE];
+
+  span_gray1=g_strdup_printf("<span color=\"%s\" size=\"smaller\">", color_str[COLOR_GRAY1]);
+  span_black=g_strdup_printf("<span color=\"%s\">", color_str[COLOR_BLACK]);
   
   hds=g_malloc0(sizeof(hds_param));
   

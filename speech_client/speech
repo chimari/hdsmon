@@ -1,0 +1,9 @@
+#!/bin/sh
+FILE="/tmp/speech"
+if [ -e $FILE ];then
+    rm $FILE
+fi
+mkfifo $FILE
+chmod 777 $FILE
+${HOME}/bin/sp &
+script -f $FILE

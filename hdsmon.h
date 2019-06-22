@@ -17,6 +17,7 @@
 #include<pwd.h>
 #include<sys/types.h>
 #include <string.h>
+#include <math.h>
 
 #include "gtkut.h"
 
@@ -258,6 +259,7 @@ struct _stat_param{
     cover_colr, cover_colb, cover_crossr, cover_crossb, cover_mirr;
   int setting;
   char slit_filter1[32],slit_filter2[32];
+  int mode_obs, mode_i2, mode_lm;
 };
 
 
@@ -269,7 +271,6 @@ struct _hds_param{
 
   char update_time[32];
   int status_driving;
-  int mode_obs, mode_i2, mode_lm;
   char temp_time[32];
 
   GtkWidget *w_top,  *w_top_tbl, 
@@ -317,6 +318,7 @@ struct _hds_param{
   gint dcr_b, dcr_r;
   gint efs_mode;
   gint efs_bin, bin_x, bin_y;
+  gchar *camz_b, *camz_r;
   
   GtkWidget *efs_main, *efs_dw;
 };
