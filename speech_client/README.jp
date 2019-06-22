@@ -29,8 +29,12 @@ linux のNotePC等に音声読み出しソフトをいれてHDSのステータ�
 
 
 2. sp.c のコンパイル
- ※ macOSの場合は say コマンドを使うように sp.c の冒頭部の #define を一箇所修正する.
+ [※ macOSの場合]
+ macOS ディレクトリ下の sp コマンドを ~/bin にコピーする.
+ 自分でコンパイルする場合は say コマンドを使うように sp.c の冒頭部の
+ #define を一箇所修正する.
 
+ [※linuxの場合]
  同梱のsp.cを
   $ gcc -o sp sp.c 
  でコンパイルして $HOME/bin にいれておく
