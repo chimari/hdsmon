@@ -19,7 +19,7 @@ fi
 
 ${HOME}/bin/sp &
 if [ "${OS}" == 'Mac' ]; then
-    script $FILE
+    script -t 2 $FILE
 else 
     script -f $FILE
 fi
