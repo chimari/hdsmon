@@ -281,10 +281,10 @@ void update_gui(hds_param *hds){
   // Camera
   if(fabs(hds->old1.cam_rotate-hds->now.cam_rotate)>0.0001){
     if(hds->now.cam_rotate<0){
-      sprintf(tmp, "カメラ回転角を マイナス%5d秒に変更しました", -(int)(hds->now.cam_rotate*3600));
+      sprintf(tmp, "カメラの回転角度を マイナス%5d秒に変更しました", -(int)(hds->now.cam_rotate*3600));
     }
     else{
-      sprintf(tmp, "カメラ回転角を %5d秒に変更しました", (int)(hds->now.cam_rotate*3600));
+      sprintf(tmp, "カメラの回転角度を %5d秒に変更しました", (int)(hds->now.cam_rotate*3600));
     }
     talk_message(tmp);
   }
