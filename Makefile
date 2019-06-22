@@ -31,4 +31,4 @@ efs.o: efs.c
 	gcc -c efs.c `pkg-config gtk+-3.0 --cflags` `pkg-config glib-2.0 --cflags` `pkg-config cairo --cflags`
 
 clean:
-	rm -f *.o hdsmon hdscmon hdstalk *~
+	rm -f *.o hdsmon hdscmon hdstalk hdsjtalk *~
