@@ -3,7 +3,12 @@
 #include <string.h>
 
 #define SPEECH_COM "echo '%s' | open_jtalk -x /var/lib/mecab/dic/open-jtalk/naist-jdic -m /usr/share/hts-voice/mei/mei_normal.htsvoice -r 1.0 -ow /tmp/tmp.wav && aplay /tmp/tmp.wav > /dev/null 2>&1"
+
+// For UNIX (English)
 //#define SPEECH_COM "echo '%s' | festival --tts --pipe"
+
+// For macOS
+//#define SPEECH_COM "say '%s'"
 
 int main()
 {
