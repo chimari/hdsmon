@@ -1,106 +1,106 @@
-��linux�Ǥ�stview�Υƥ������ɤ߾夲�˴ؤ����� (���ܸ���)
-                                    2006.06.21  A.Tajitsu
+■linuxでのstviewのテキスト読み上げに関するメモ (日本語版)
+                                    2019.06.21  A.Tajitsu
 
-���饤����Ȥ��鲻���ɤ߽Ф��򤹤�����
+クライアントから音声読み出しをする設定
 
-linux ��NotePC���˲����ɤ߽Ф����եȤ򤤤��HDS�Υ��ơ�������
-*���ܸ��* �ꥢ�륿������ɤ߾夲��Ķ��κ����ˤĤ���
+linux のNotePC等に音声読み出しソフトをいれてHDSのステータスを
+*日本語で* リアルタイムで読み上げる環境の作成について
 
 ##############################################################
-# �Ѹ�ξ��� sp.c �ǻ��ꤷ�Ƥ����ɤ߾夲���եȤ��ѹ�����������
-# ���ˤ���festival �ʤɤ��Ѥ���
+# 英語の場合は sp.c で指定している読み上げソフトを変更したうえで
+# ↓にあるfestival などを用いる
 ##############################################################
 
 
-1. �����ɤ߽Ф����եȤΥ��󥹥ȡ���
- ���ܸ�Ǥ�ߤ������� open-jtalk ���褤�褦�Ǥ���
- ubuntu�ξ��
+1. 音声読み出しソフトのインストール
+ 日本語でよみたい場合は open-jtalk がよいようである
+ ubuntuの場合
   $ apt install open-jtalk open-jtalk-mecab-naist-jdic hts-voice-nitech-jp-atr503-m001
 
- �������������ˤ�������礵���
+ 女性ヴォイスにしたい場合さらに
   $ wget http://sourceforge.net/projects/mmdagent/files/MMDAgent_Example/MMDAgent_Example-1.7/MMDAgent_Example-1.7.zip
   $ unzip MMDAgent_Example-1.7.zip
   $ sudo cp -r MMDAgent_Example-1.7/Voice/mei/ /usr/share/hts-voice/
 
- ��ǧ����ˤ�
-  $ echo '����ˤ���' | open_jtalk -x /var/lib/mecab/dic/open-jtalk/naist-jdic -m /usr/share/hts-voice/mei/mei_normal.htsvoice -r 1.0 -ow test.wav && aplay test.wav
+ 確認するには
+  $ echo 'こんにちは' | open_jtalk -x /var/lib/mecab/dic/open-jtalk/naist-jdic -m /usr/share/hts-voice/mei/mei_normal.htsvoice -r 1.0 -ow test.wav && aplay test.wav
 
 
-2. sp.c �Υ���ѥ���
- Ʊ����sp.c��
+2. sp.c のコンパイル
+ 同梱のsp.cを
   $ gcc -o sp sp.c 
- �ǥ���ѥ��뤷�� $HOME/bin �ˤ���Ƥ���
+ でコンパイルして $HOME/bin にいれておく
 
-3. Ʊ���� speech ������ץȤ�Ʊ���ǥ��쥯�ȥ�˥��ԡ����Ƥ���
+3. 同梱の speech スクリプトを同じディレクトリにコピーしておく
   $ cp sp speech $HOME/bin/
 
 
-�Ȥ���
-1. linux �Ķ��Υ����ߥʥ�� speech ��ư
+使い方
+1. linux 環境のターミナルで speech を起動
      $ speech
-     ������ץȤ򳫻Ϥ��ޤ������ե������ /tmp/speech �Ǥ�
-   �Ȥʤ�.
+     スクリプトを開始しました。ファイルは /tmp/speech です
+   となる.
 
-2. Ʊ�������ߥʥ�� hdsobcpl �إ�������
+2. 同じターミナルで hdsobcpl へアクセス
      $ ssh hdsuser@hdsobcpl.sum.naoj.org
 
-3. OBCP �� hdsjtalk �����餻��Ȳ������ɤޤ��
+3. OBCP で hdsjtalk を走らせると音声が読まれる
      hdsobcpl$ hdsjtalk
 
-4. ��λ����Ȥ��� hdsobcpl������������Ȥ������Ȥ⤦���� Ctrl-D�����
+4. 終了するときは hdsobcplからログアウトしたあともう一度 Ctrl-Dすると
      $ exit
-     ������ץȤ�λ���ޤ������ե������ /tmp/speech �Ǥ�
-   �ȽФ�ΤǤ�����ǧ����.
+     スクリプトを終了しました。ファイルは /tmp/speech です
+   と出るのでそれを確認する.
 
 
 
 
 ====================================================================
-       �ʲ�   OLD README
+       以下   OLD README
 ====================================================================
 
 
-��linux�Ǥ�stview�Υƥ������ɤ߾夲�˴ؤ�����
+■linuxでのstviewのテキスト読み上げに関するメモ
                                     2004.02.19  A.Tajitsu
 
 
-���Ķ�
+▼環境
    Fedora Core 1 linux (x86)
 
 
-�������ɤ߾夲���ե�
-   linux��Ǥ�"Festival"�Ȥ����ե꡼���եȤ����ѤǤ��롣
-   ¾��UNIX�Ķ��Ǥ���ѤǤ����������ƥ��ȤϤ��Ƥ��ʤ���
-     [Festival ����������]
+▼音声読み上げソフト
+   linux上では"Festival"というフリーソフトが利用できる。
+   他のUNIX環境でも使用できそうだがテストはしていない。
+     [Festival 公式サイト]
            http://www.cstr.ed.ac.uk/projects/festival/
 
-     [���󥹥ȡ�����⥵����]
+     [インストール解説サイト]
            http://www02.so-net.ne.jp/~saitou/poems/finstall.html
 
-   - Festival�Υ��󥹥ȡ���
-       Fedora Core 1 �Ǥ�yum��rpm�ˤ�륤�󥹥ȡ��뤬�Ǥ��롣
-       �����餯apt�Ǥ��ǽ�Ǥ���Ȼפ��롣
+   - Festivalのインストール
+       Fedora Core 1 ではyumでrpmによるインストールができる。
+       おそらくaptでも可能であると思われる。
           # yum install festival
 
-       ��������ǥ��󥹥ȡ��뽪λ��
-       (rpm�Ǥ�1.4.2�����ä����ǿ��Ǥ�1.4.3)
+       これだけでインストール終了。
+       (rpmでは1.4.2が入った。最新版は1.4.3)
 
-       (�ƥ����Ȥ��ɤ߾夲�� --tts ���ץ����ǵ�ư��)
+       (テキストの読み上げは --tts オプションで起動。)
 
 
-��linux�ޥ���Ǥ�FIFO�ν���
-    �ʲ���source("sp.c")��linux�ޥ����make���롣
+▼linuxマシンでのFIFOの準備
+    以下のsource("sp.c")をlinuxマシンでmakeする。
         % gcc -o sp sp.c
 
-    sprintfʸ����Ȥ�festival�ǥƥ������ɤ߾夲�򤹤���ʬ�Ǥ��롣
-    %s���ɤ߾夲����ʸ�������뤿�ᡢ
-        echo <ʸ����> | festival --tts --pipe
-    �Ȥ���pipe�ǵ�ư���Ƥ��롣
+    sprintf文の中身がfestivalでテキスト読み上げをする部分である。
+    %sに読み上げたい文字列が入るため、
+        echo <文字列> | festival --tts --pipe
+    としてpipeで起動している。
 
-    open���Ƥ���FIFO�Ϻ���"/tmp/speech"�Ȥ��Ƥ뤬Ŭ���ѹ����Ƥ��ޤ�ʤ���
+    openしているFIFOは今回"/tmp/speech"としてるが適宜変更してかまわない。
         % mkfifo /tmp/speech
         % chmod 777 /tmp/speech
-    �Ȥ���permission�򤫤��Ƥ�����
+    としてpermissionをかえておく。
    
 ======================================================================
    #include <stdio.h>
@@ -130,45 +130,45 @@ linux ��NotePC���˲����ɤ߽Ф����եȤ򤤤��HDS�Υ��ơ�������
        
 
 
-��linux�ޥ���ǤΥ��եȤε�ư��
-  1. ��ۤɺ����������ե�"sp"��ư
+▼linuxマシンでのソフトの起動。
+  1. 先ほど作成したソフト"sp"を起動
       % sp
 
-  2. �����ߥʥ뤫��FIFO�˥�����������script��ư
+  2. ターミナルからFIFOにアクセスするscriptを起動
       % script -f /tmp/speech
-    (���ץ���� -f �ϴĶ��Ǥ��Ȥʤ뤫���Τ�ʤ�)
+    (オプション -f は環境でことなるかも知れない)
 
-  3. 2�򤪤��ʤä������ߥʥ��telnet�����ͳ����tws4�˥������󤹤롣
+  3. 2をおこなったターミナルでtelnet等を経由してtws4にログインする。
 
   4. tws4% cd bin.stview/
 
   5  tws4% ./talk03.py
-    (Python������ץȤ�ư)
+    (Pythonスクリプトを起動)
 
 
-���������ޥ����ʤ�
-  talk_03.py�ʤɤ�Python������ץȤǡ����Τޤ���Ȥ�񤭴����Ƶ�ư����
-  �����Ǥ褤��
+▼カスタマイズなど
+  talk_03.pyなどはPythonスクリプトで、そのまま中身を書き換えて起動する
+  だけでよい。
 
 
-�����ޤ�:festival�β������Ѥ���
-   Fedora Core1��yum�Ǥ��줿festival�ˤ������ƤΥ��ʤΤǡ�¾�Υѥå���
-   ����source���餤�줿���ϥǥ��쥯�ȥ������ۤʤ�ޤ���
+▼おまけ:festivalの音声の変え方
+   Fedora Core1のyumでいれたfestivalにたいしてのメモなので、他のパッケー
+   ジやsourceからいれた場合はディレクトリ等が異なります。
 
-  [MBROLA��Home Page]
-   http://tcts.fpms.ac.be/synthesis/mbrola/mbrcopybin.html  ����
-    - MBROLA����(�¹ԥե�����) linux i386��      = mbr301h.zip
-    - �����ե����� (us1:American English������)  = us1-980512.zip
+  [MBROLAのHome Page]
+   http://tcts.fpms.ac.be/synthesis/mbrola/mbrcopybin.html  から
+    - MBROLA本体(実行ファイル) linux i386用      = mbr301h.zip
+    - 音声ファイル (us1:American English女性版)  = us1-980512.zip
 
-  [Festival��Home Page]
-   http://www.cstr.ed.ac.uk/download/festival/1.4.3/ ����
-    - us1��festvox   festvox.us1.tar.gz
+  [FestivalのHome Page]
+   http://www.cstr.ed.ac.uk/download/festival/1.4.3/ から
+    - us1用festvox   festvox.us1.tar.gz
 
-   �ΤߤäĤΥե���������������ɤ��롣
+   のみっつのファイルをダウンロードする。
 
     % unzip mbr301h.zip
     % su
-    # mv mbrola-linux-i386 /usr/local/bin/mbrola  (�¹ԥե�����)
+    # mv mbrola-linux-i386 /usr/local/bin/mbrola  (実行ファイル)
 
     % tar -zxvf festvox.us1.tar.gz
     % cd festival/lib/voices/english/
@@ -179,10 +179,10 @@ linux ��NotePC���˲����ɤ߽Ф����եȤ򤤤��HDS�Υ��ơ�������
     % su
     # mv us1 /usr/share/festival/voices/english/us1_mbrola/
 
-   �Ȥ��ƥ��󥹥ȡ���ϴ�λ��
+   としてインストールは完了。
 
-   ���� $(HOME)/.festivalrc ��������롣
-   ��Ȥ�
+   次に $(HOME)/.festivalrc を作成する。
+   中身は
 
      (set! voice_default 'voice_us1_mbrola)
      ;(set! voice_default 'voice_us2_mbrola)
@@ -193,8 +193,8 @@ linux ��NotePC���˲����ɤ߽Ф����եȤ򤤤��HDS�Υ��ơ�������
      ;(set! voice_default 'voice_ked_diphone)
      ;(set! voice_default 'voice_rab_diphone)
 
-   �Ȥ��Ƥ����Ф�����(;�Ԥϥ����ȥ�����)
-   ����ư������������ˤʤ�Ϥ���
+   としておけばいい。(;行はコメントアウト)
+   次回起動から女性の声になるはず。
 
 
 
