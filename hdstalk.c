@@ -23,8 +23,26 @@
 #include<math.h>
 
 
-#include"hdstalk.h"    /* hdstalkÍÑÀßÄê¥Ø¥Ã¥À */
+#include"hdstalk.h"    /* hdstalkç”¨è¨­å®šãƒ˜ãƒƒãƒ€ */
 
+static gchar *setting_name_e[NUM_SET]={
+  "Non-Standard", 
+  "Standard U B", 
+  "Standard U A", 
+  "Standard B A", 
+  "Standard B C", 
+  "Standard Y A", 
+  "Standard I2 B",
+  "Standard Y D", 
+  "Standard Y B",
+  "Standard Y C", 
+  "Standard I2 A", 
+  "Standard R A", 
+  "Standard R B", 
+  "Standard N-I-R C",
+  "Standard N-I-R B", 
+  "Standard N-I-R A"
+};
 
 void usage();
 void talk_message();
@@ -75,7 +93,7 @@ gint time_func(hds_param *hds){
     fprintf(stderr,"STATUS read error\n");
   }
   else if (status_stat.st_mtime !=up_time){
-    // modified time¤¬¿·¤·¤¤¤È¤­¤Î¤ßºÆÆÉ¤ß¹þ¤ß 
+    // modified timeãŒæ–°ã—ã„ã¨ãã®ã¿å†èª­ã¿è¾¼ã¿ 
 #ifdef DEBUG2
       g_print("Status reading...\n");
 #endif
@@ -260,7 +278,7 @@ void update_gui(hds_param *hds){
 
   // Camera
   if(fabs(hds->old1.cam_rotate-hds->now.cam_rotate)>0.0001){
-    sprintf(tmp, "Camera ratation is %5d arcsec.", (int)(hds->now.cam_rotate*3600));
+    sprintf(tmp, "Camera rotation angle is %5d arcsec.", (int)(hds->now.cam_rotate*3600));
     talk_message(tmp);
   }
 
@@ -282,7 +300,7 @@ void update_gui(hds_param *hds){
 
   // Wavelength
   if((hds->old1.setting!=hds->now.setting)){
-    sprintf(tmp, "Wavelength setting is %s.", setting_name[hds->now.setting]);
+    sprintf(tmp, "Wavelength setting is %s.", setting_name_e[hds->now.setting]);
     talk_message(tmp);
   }
 
@@ -581,7 +599,7 @@ void file_search(hds_param *hds){
 #endif
 
   read_line=0;
-  /* ¹¹¿·Æü»þ */
+  /* æ›´æ–°æ—¥æ™‚ */
   strcpy(hds->update_time,get_param(buf[read_line]," = "));
   read_line++;
   /* Driving */
@@ -592,7 +610,7 @@ void file_search(hds_param *hds){
   g_print("   reading mode\n");
 #endif
 
-  /*** ¥â¡¼¥É ***/
+  /*** ãƒ¢ãƒ¼ãƒ‰ ***/
   read_line++;
   /* OBS-MODE */
   hds->now.mode_obs=get_status(buf[read_line]," = ");
@@ -776,7 +794,7 @@ void file_search(hds_param *hds){
 }
 
 
-/* ¥Ñ¥é¥á¡¼¥¿ ¥ê¡¼¥É´Ø¿ô */
+/* ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿ ãƒªãƒ¼ãƒ‰é–¢æ•° */
 char *get_param(char * buf , char *token){
   static char b[BUFFSIZE];
   char *c=NULL;
@@ -789,7 +807,7 @@ char *get_param(char * buf , char *token){
 }
   
 
-/* status ¥Ñ¥é¥á¡¼¥¿ ¥ê¡¼¥É´Ø¿ô  1:Yes 0:No -1:UNKNOWN */
+/* status ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿ ãƒªãƒ¼ãƒ‰é–¢æ•°  1:Yes 0:No -1:UNKNOWN */
 int get_status(char *buf, char *token){
   static char b[BUFFSIZE];
   char *c=NULL;
@@ -809,7 +827,7 @@ int get_status(char *buf, char *token){
   }
 }
 
-/* status ¥Ñ¥é¥á¡¼¥¿ ¥ê¡¼¥É´Ø¿ô for ImgSlicer  1:IS#1 0:NOUSE */
+/* status ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿ ãƒªãƒ¼ãƒ‰é–¢æ•° for ImgSlicer  1:IS#1 0:NOUSE */
 int get_status_is(char *buf,  char *token){
   static char b[BUFFSIZE];
   char *c=NULL;
@@ -820,7 +838,7 @@ int get_status_is(char *buf,  char *token){
   return((int)atoi(b));
 }
 
-/* status ¥Ñ¥é¥á¡¼¥¿ ¥ê¡¼¥É´Ø¿ô¤½¤Î2  1:1 0:0 -1:UNKNOWN */
+/* status ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿ ãƒªãƒ¼ãƒ‰é–¢æ•°ãã®2  1:1 0:0 -1:UNKNOWN */
 int get_status2(char *buf,  char *token){
   static char b[BUFFSIZE];
   char *c=NULL;
@@ -840,7 +858,7 @@ int get_status2(char *buf,  char *token){
   }
 }
 
-/* OPEN/CLOSE ¥Ñ¥é¥á¡¼¥¿ ¥ê¡¼¥É´Ø¿ô  1:OPEN 0:CLOSE -1:UNKNOWN */
+/* OPEN/CLOSE ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿ ãƒªãƒ¼ãƒ‰é–¢æ•°  1:OPEN 0:CLOSE -1:UNKNOWN */
 int get_oc(char *buf, char *token){
   static char b[BUFFSIZE];
   char *c=NULL;
@@ -860,7 +878,7 @@ int get_oc(char *buf, char *token){
   }
 }
 
-/* OPEN/CLOSE ¥Ñ¥é¥á¡¼¥¿ ¥ê¡¼¥É´Ø¿ô¤½¤Ë¤ç2  1:OPEN 0:CLOSE -1:UNKNOWN */
+/* OPEN/CLOSE ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿ ãƒªãƒ¼ãƒ‰é–¢æ•°ãã«ã‚‡2  1:OPEN 0:CLOSE -1:UNKNOWN */
 int *get_oc2(char *buf, char *token){
   static int b[3];
   char *c=NULL;
@@ -894,7 +912,7 @@ int *get_oc2(char *buf, char *token){
   return(b);
 }
 
-/* BLUE/RED ¥Ñ¥é¥á¡¼¥¿ ¥ê¡¼¥É´Ø¿ô  2:MIRROR 1:BLUE 0:RED -1:UNKNOWN */
+/* BLUE/RED ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿ ãƒªãƒ¼ãƒ‰é–¢æ•°  2:MIRROR 1:BLUE 0:RED -1:UNKNOWN */
 int get_br(char *buf, char *token){
   static char b[BUFFSIZE];
   char *c=NULL;
@@ -918,7 +936,7 @@ int get_br(char *buf, char *token){
 }
 
 
-/* IN/OUT ¥Ñ¥é¥á¡¼¥¿ ¥ê¡¼¥É´Ø¿ô  1:IN 0:OUT -1:UNKNOWN */
+/* IN/OUT ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿ ãƒªãƒ¼ãƒ‰é–¢æ•°  1:IN 0:OUT -1:UNKNOWN */
 int get_io(char *buf, char *token){
   static char b[BUFFSIZE];
   char *c=NULL;
@@ -939,7 +957,7 @@ int get_io(char *buf, char *token){
 }
 
 
-/* Ê¸»úÎó¤ÎÂçÊ¸»ú²½ */
+/* æ–‡å­—åˆ—ã®å¤§æ–‡å­—åŒ– */
 char *capiterize(char *c_in){
   static char b[BUFFSIZE];
   int i;
@@ -1237,7 +1255,7 @@ int main(int argc, char* argv[]){
 
   init_hds(&hds->old1);
   init_hds(&hds->old2);
-  file_search(hds); /* ºÇ½é¤Î°ì²ó */
+  file_search(hds); /* æœ€åˆã®ä¸€å›ž */
 
   hds->init_status=FALSE;
 
