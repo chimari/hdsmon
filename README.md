@@ -18,3 +18,4 @@ Subaru HDS status monitor running in HDS OBCP
 
 ## speech_client
 - ノートPCにインストールしてから hdsobcplに ssh 接続し音声を読み上げるためのクライント
+- linux もしくは macOS(バイナリ同梱)用
