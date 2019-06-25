@@ -11,6 +11,243 @@
 
 gchar *span_gray1, *span_black;
 
+void popup_top(gchar* stock_id, ...);
+
+void close_win(GtkWidget *w, gpointer gdata){
+  GtkWidget *dialog=(GtkWidget *)gdata;
+
+  gtk_widget_destroy(dialog);
+}
+
+void popup_top(gchar* stock_id, ...){
+  va_list args;
+  gchar *msg1;
+  GtkWidget *dialog;
+  GtkWidget *label;
+  GtkWidget *button;
+  GtkWidget *pixmap;
+  GtkWidget *hbox;
+  GtkWidget *vbox0, *vbox;
+  gint timer;
+
+  va_start(args, stock_id);
+
+  dialog  = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+  gtk_container_set_border_width(GTK_CONTAINER(dialog),5);
+  gtk_window_set_title(GTK_WINDOW(dialog),"HDS Monitor : Message");
+
+  vbox0 = gtkut_vbox_new(FALSE,2);
+  gtk_container_set_border_width (GTK_CONTAINER (vbox0), 0);
+  gtk_container_add(GTK_CONTAINER(dialog), vbox0);
+
+
+  hbox = gtkut_hbox_new(FALSE,2);
+  gtk_box_pack_start(GTK_BOX(vbox0),hbox,FALSE, FALSE, 0);
+  gtk_container_set_border_width (GTK_CONTAINER (hbox), 0);
+  
+
+#ifdef USE_GTK3
+  pixmap=gtk_image_new_from_icon_name (stock_id,
+				       GTK_ICON_SIZE_DIALOG);
+#else
+  pixmap=gtk_image_new_from_stock (stock_id,
+				   GTK_ICON_SIZE_DIALOG);
+#endif
+
+  gtk_box_pack_start(GTK_BOX(hbox), pixmap,FALSE, FALSE, 0);
+
+  vbox = gtkut_vbox_new(FALSE,2);
+  gtk_container_set_border_width (GTK_CONTAINER (vbox), 0);
+  gtk_box_pack_start(GTK_BOX(hbox),vbox,FALSE, FALSE, 0);
+
+  while(1){
+    msg1=va_arg(args,gchar*);
+    if(!msg1) break;
+   
+    label=gtkut_label_new(msg1);
+    gtkut_pos(label, POS_START, POS_CENTER);
+    gtk_box_pack_start(GTK_BOX(vbox),
+		       label,TRUE,TRUE,0);
+  }
+
+  va_end(args);
+
+#ifdef USE_GTK3
+  button=gtkut_button_new_from_icon_name("OK","emblem-default");
+#else
+  button=gtkut_button_new_from_stock("OK",GTK_STOCK_OK);
+#endif
+  gtk_box_pack_start(GTK_BOX(vbox0),button,FALSE,FALSE,0);
+  g_signal_connect(button,"pressed",
+		   G_CALLBACK(close_win), 
+		   (gpointer)dialog);
+  gtk_widget_show_all(dialog);
+}
+
+
+void popup_col(hds_param *hds){
+  gchar *is1_str, *fil1_str, *is0_str, *fil0_str;
+  gdouble v1, v0;
+  gchar *tmp, *tmp2;
+  
+  fil1_str=g_strdup_printf("Filter x%d", hds->filnum);
+  fil0_str=g_strdup_printf("Filter x%d", hds->filnum_old);
+  
+  switch(hds->isnum){
+  case 1:
+    is1_str=g_strdup("IS #1/2");
+    if(hds->filnum){
+      v1=ideal_colv1[1];
+    }
+    else{
+      v1=ideal_colv0[1];
+    }
+    break;
+    
+  case 2:
+    is1_str=g_strdup("IS #3");
+    if(hds->filnum){
+      v1=ideal_colv1[3];
+    }
+    else{
+      v1=ideal_colv0[3];
+    }
+    break;
+    
+  default:
+    is1_str=g_strdup("Slit");
+    if(hds->filnum){
+      v1=ideal_colv1[0];
+    }
+    else{
+      v1=ideal_colv0[0];
+    }
+    break;
+  }
+  
+  switch(hds->isnum_old){
+  case 1:
+    is0_str=g_strdup("IS #1/2");
+    if(hds->filnum){
+      v0=ideal_colv1[1];
+    }
+    else{
+      v0=ideal_colv0[1];
+    }
+    break;
+    
+  case 2:
+    is0_str=g_strdup("IS #3");
+    if(hds->filnum){
+      v0=ideal_colv1[3];
+    }
+    else{
+      v0=ideal_colv0[3];
+    }
+    break;
+    
+  default:
+    is0_str=g_strdup("Slit");
+    if(hds->filnum){
+      v0=ideal_colv1[0];
+    }
+    else{
+      v0=ideal_colv0[0];
+    }
+    break;
+  }
+  
+  tmp=g_strdup_printf("[%s, %s] (%+.3lfV)  -->  [%s, %s] (%+.3lfV)",
+		      is0_str, fil0_str, v0,
+		      is1_str, fil1_str, v1);
+  
+  tmp2=g_strdup_printf("       inc drive : <b>%d</b>", (gint)((v0-v1)/0.000342));
+  
+  popup_top(
+#ifdef USE_GTK3
+	    "dialog-warning", 
+#else
+	    GTK_STOCK_DIALOG_WARNING,
+#endif
+	    hds->update_time,
+	    " ",
+	    "<b>Collimator should be shifted</b> :",
+	    tmp,
+	    tmp2,
+	    " ",
+	    "<span color=\"#FF0000\">Every after CE restarted, Image Sicer status is reset to \"Slit\".</span>",
+	    "<span color=\"#FF0000\">If you keep IS equipped, <b>this value could be incorrect.</b></span>",
+	    NULL);
+
+  g_free(tmp);	      
+  g_free(tmp2);	      
+  g_free(is0_str);
+  g_free(is1_str);
+  g_free(fil0_str);
+  g_free(fil1_str);
+}
+
+gboolean get_filnum(hds_param *hds, gboolean fl){
+  gint ret=0;
+
+  if(strncmp(hds->now.slit_filter1, "FREE", 4)!=0){
+    ret++;
+  }
+
+  if(strncmp(hds->now.slit_filter2, "FREE", 4)!=0){
+    ret++;
+  }
+
+  if(ret>1) ret=1;  // ignore 2 filters
+
+  if(fl){
+    hds->filnum_old=ret;
+    hds->filnum=ret;
+  }
+  else{
+    if(hds->filnum!=ret){
+      hds->filnum_old=hds->filnum;
+      hds->filnum=ret;
+      return(TRUE);
+    }
+  }
+
+  return(FALSE);
+}
+
+gboolean get_isnum(hds_param *hds, gboolean fl){
+  gint ret=0;
+
+  switch(hds->now.is_unit){
+  case 1:
+  case 2:
+    ret=1;
+    break;
+
+  case 3:
+    ret=2;
+    break;
+
+  defailt:
+    ret=0;
+    break;
+  }
+
+  if(fl){
+    hds->isnum_old=ret;
+    hds->isnum=ret;
+  }
+  else{
+    if(hds->isnum!=ret){
+      hds->isnum_old=hds->isnum;
+      hds->isnum=ret;
+      return(TRUE);
+    }
+  }
+
+  return(FALSE);
+}
+
 gint time_func(gpointer data){
   struct stat status_stat;
   static time_t up_time;
@@ -34,6 +271,7 @@ gint time_func(gpointer data){
 
 void update_gui(hds_param *hds){
   gchar *tmp;
+  gint is_flag=FALSE, fil_flag=FALSE;
 
   //tmp=g_malloc0(sizeof(gchar)*BUFFSIZE);
 
@@ -306,6 +544,10 @@ void update_gui(hds_param *hds){
     g_free(tmp);
 
     change_color(hds->w_lcol_filter, COLOR_RED, TRUE, FALSE);
+
+    if(hds->status_driving==0){
+      fil_flag=get_filnum(hds, FALSE);
+    }
   }
   else if((strcmp(hds->old2.slit_filter1,hds->old1.slit_filter1)!=0)||
 	  (strcmp(hds->old2.slit_filter2,hds->old1.slit_filter2)!=0)) {
@@ -374,6 +616,10 @@ void update_gui(hds_param *hds){
     g_free(tmp);
 
     change_color(hds->w_mode_is, COLOR_RED, FALSE, FALSE);
+
+    if(hds->status_driving==0){
+      is_flag=get_isnum(hds, FALSE);
+    }
   }
   else if((hds->old1.is_unit!=hds->old2.is_unit)) {
     change_color(hds->w_mode_is, COLOR_BLACK, FALSE, FALSE);
@@ -480,6 +726,10 @@ void update_gui(hds_param *hds){
   
   hds->old1=hds->now;
   //cp_stat(&hds->old1, &hds->now);
+
+  if((is_flag)||(fil_flag)){
+    popup_col(hds);
+  }
 
   hds->init_status=TRUE;
   return;
@@ -2206,6 +2456,9 @@ int main(int argc, char* argv[]){
   init_hds(&hds->old1);
   init_hds(&hds->old2);
   file_search(hds); /* 最初の一回 */
+  get_filnum(hds, TRUE);
+  get_isnum(hds, TRUE);
+  
 
   strcpy(rcfile, gethome());
   strcat(rcfile, "/.hdsmon/hdsmonrc");
