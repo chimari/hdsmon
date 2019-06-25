@@ -176,7 +176,7 @@ void popup_col(hds_param *hds){
 	    tmp2,
 	    " ",
 	    "<span color=\"#FF0000\">Every after CE restarted, Image Sicer status is reset to \"Slit\".</span>",
-	    "<span color=\"#FF0000\">If you keep IS equipped, <b>this value could be incorrect.</b></span>",
+	    "<span color=\"#FF0000\">If an IS unit is kept quipped, <b>you must ignore this message.</b></span>",
 	    NULL);
 
   g_free(tmp);	      
