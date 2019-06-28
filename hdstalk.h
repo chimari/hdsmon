@@ -44,14 +44,14 @@ enum{
 
 
 static gdouble ideal_colv0[]={
-  +1,441, // Slit
+  +1.441, // Slit
   -1.062, // IS1
   -1.062, // IS2
   -2.292, // IS3 
 };
 
 static gdouble ideal_colv1[]={
-  +2,106, // Slit
+  +2.106, // Slit
   -0.401, // IS1 
   -0.401, // IS2 
   -1.632  // IS3 
@@ -168,6 +168,9 @@ struct _hds_param{
   gint ec0_b, ec0_r;
   gint dcr_b, dcr_r;
   gchar *camz_b, *camz_r;
+
+  gint filnum, filnum_old;
+  gint isnum, isnum_old;
 };
 
 

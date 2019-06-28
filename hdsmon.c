@@ -85,83 +85,39 @@ void popup_top(gchar* stock_id, ...){
 }
 
 
-void popup_col(hds_param *hds){
-  gchar *is1_str, *fil1_str, *is0_str, *fil0_str;
-  gdouble v1, v0;
+void popup_col_fil(hds_param *hds){
+  gchar *is_str, *filnew_str, *filold_str;
+  gdouble vnew, vold;
   gchar *tmp, *tmp2;
   
-  fil1_str=g_strdup_printf("Filter x%d", hds->filnum);
-  fil0_str=g_strdup_printf("Filter x%d", hds->filnum_old);
+  filnew_str=g_strdup_printf("Filter x%d", hds->filnum);
+  filold_str=g_strdup_printf("Filter x%d", hds->filnum_old);
   
   switch(hds->isnum){
   case 1:
-    is1_str=g_strdup("IS #1/2");
-    if(hds->filnum){
-      v1=ideal_colv1[1];
-    }
-    else{
-      v1=ideal_colv0[1];
-    }
+    is_str=g_strdup("IS #1/2");
+    vnew=(hds->filnum) ? ideal_colv1[1] : ideal_colv0[1];
+    vold=(hds->filnum_old) ? ideal_colv1[1] : ideal_colv0[1];
     break;
     
   case 2:
-    is1_str=g_strdup("IS #3");
-    if(hds->filnum){
-      v1=ideal_colv1[3];
-    }
-    else{
-      v1=ideal_colv0[3];
-    }
+    is_str=g_strdup("IS #3");
+    vnew=(hds->filnum) ? ideal_colv1[3] : ideal_colv0[3];
+    vold=(hds->filnum_old) ? ideal_colv1[3] : ideal_colv0[3];
     break;
     
   default:
-    is1_str=g_strdup("Slit");
-    if(hds->filnum){
-      v1=ideal_colv1[0];
-    }
-    else{
-      v1=ideal_colv0[0];
-    }
+    is_str=g_strdup("Slit");
+    vnew=(hds->filnum) ? ideal_colv1[0] : ideal_colv0[0];
+    vold=(hds->filnum_old) ? ideal_colv1[0] : ideal_colv0[0];
     break;
   }
-  
-  switch(hds->isnum_old){
-  case 1:
-    is0_str=g_strdup("IS #1/2");
-    if(hds->filnum){
-      v0=ideal_colv1[1];
-    }
-    else{
-      v0=ideal_colv0[1];
-    }
-    break;
-    
-  case 2:
-    is0_str=g_strdup("IS #3");
-    if(hds->filnum){
-      v0=ideal_colv1[3];
-    }
-    else{
-      v0=ideal_colv0[3];
-    }
-    break;
-    
-  default:
-    is0_str=g_strdup("Slit");
-    if(hds->filnum){
-      v0=ideal_colv1[0];
-    }
-    else{
-      v0=ideal_colv0[0];
-    }
-    break;
-  }
-  
+   
   tmp=g_strdup_printf("[%s, %s] (%+.3lfV)  -->  [%s, %s] (%+.3lfV)",
-		      is0_str, fil0_str, v0,
-		      is1_str, fil1_str, v1);
+		      is_str, filold_str, vold,
+		      is_str, filnew_str, vnew);
   
-  tmp2=g_strdup_printf("       inc drive : <b>%d</b>", (gint)((v0-v1)/0.000342));
+  tmp2=g_strdup_printf("       inc drive : <b>%d</b>", (gint)((vold-vnew)/0.000342));
   
   popup_top(
 #ifdef USE_GTK3
@@ -176,16 +132,87 @@ void popup_col(hds_param *hds){
 	    tmp2,
 	    " ",
 	    "<span color=\"#FF0000\">Every after CE restarted, Image Sicer status is reset to \"Slit\".</span>",
-	    "<span color=\"#FF0000\">If an IS unit is kept quipped, <b>you must ignore this message.</b></span>",
+	    "<span color=\"#FF0000\">If an IS unit is kept equipped, <b>you must ignore this message.</b></span>",
 	    NULL);
 
   g_free(tmp);	      
   g_free(tmp2);	      
-  g_free(is0_str);
-  g_free(is1_str);
-  g_free(fil0_str);
-  g_free(fil1_str);
+  g_free(is_str);
+  g_free(filold_str);
+  g_free(filnew_str);
 }
+
+void popup_col_is(hds_param *hds){
+  gchar *isold_str, *isnew_str, *fil_str;
+  gdouble vnew, vold;
+  gchar *tmp, *tmp2;
+  
+  fil_str=g_strdup_printf("Filter x%d", hds->filnum);
+  
+  switch(hds->isnum){
+  case 1:
+    isnew_str=g_strdup("IS #1/2");
+    vnew=(hds->filnum) ? ideal_colv1[1] : ideal_colv0[1];
+    break;
+    
+  case 2:
+    isnew_str=g_strdup("IS #3");
+    vnew=(hds->filnum) ? ideal_colv1[3] : ideal_colv0[3];
+    break;
+    
+  default:
+    isnew_str=g_strdup("Slit");
+    vnew=(hds->filnum) ? ideal_colv1[0] : ideal_colv0[0];
+    break;
+  }
+
+  switch(hds->isnum_old){
+  case 1:
+    isold_str=g_strdup("IS #1/2");
+    vold=(hds->filnum) ? ideal_colv1[1] : ideal_colv0[1];
+    break;
+    
+  case 2:
+    isold_str=g_strdup("IS #3");
+    vold=(hds->filnum) ? ideal_colv1[3] : ideal_colv0[3];
+    break;
+    
+  default:
+    isold_str=g_strdup("Slit");
+    vold=(hds->filnum) ? ideal_colv1[0] : ideal_colv0[0];
+    break;
+  }
+   
+  tmp=g_strdup_printf("[%s, %s] (%+.3lfV)  -->  [%s, %s] (%+.3lfV)",
+		      isold_str, fil_str, vold,
+		      isnew_str, fil_str, vnew);
+  
+  tmp2=g_strdup_printf("       inc drive : <b>%d</b>", (gint)((vold-vnew)/0.000342));
+  
+  popup_top(
+#ifdef USE_GTK3
+	    "dialog-warning", 
+#else
+	    GTK_STOCK_DIALOG_WARNING,
+#endif
+	    hds->update_time,
+	    " ",
+	    "<b>Collimator should be shifted</b> :",
+	    tmp,
+	    tmp2,
+	    " ",
+	    "<span color=\"#FF0000\">Every after CE restarted, Image Sicer status is reset to \"Slit\".</span>",
+	    "<span color=\"#FF0000\">If an IS unit is kept equipped, <b>you must ignore this message.</b></span>",
+	    NULL);
+
+  g_free(tmp);	      
+  g_free(tmp2);	      
+  g_free(isnew_str);
+  g_free(isold_str);
+  g_free(fil_str);
+}
+
+
 
 gboolean get_filnum(hds_param *hds, gboolean fl){
   gint ret=0;
@@ -292,7 +319,7 @@ void update_gui(hds_param *hds){
   }
   else if(hds->status_driving==1){
     gtk_label_set_markup(GTK_LABEL(hds->w_status_driving), 
-			 "<span color=\"#FFFFFF\" bgcolor=\"FF0000\">    <b>Driving!!</b>    </span>");
+			 "<span color=\"#FFFFFF\" bgcolor=\"#FF0000FF\">    <b>Driving!!</b>    </span>");
   }
   else{
     gtk_label_set_markup(GTK_LABEL(hds->w_status_driving), 
@@ -727,8 +754,12 @@ void update_gui(hds_param *hds){
   hds->old1=hds->now;
   //cp_stat(&hds->old1, &hds->now);
 
-  if((is_flag)||(fil_flag)){
-    popup_col(hds);
+  if(fil_flag){
+    popup_col_fil(hds);
+  }
+
+  if(is_flag){
+    popup_col_is(hds);
   }
 
   hds->init_status=TRUE;
@@ -1596,34 +1627,45 @@ void gui_init(hds_param *hds){
 void change_color(GtkWidget *widget, gint color, 
 		  gboolean flag_bold, gboolean flag_slant){
   const gchar *str;
+  gchar *col_str;
   gchar *tmp;
 
   str=gtk_label_get_text(GTK_LABEL(widget));
 
   if(str){
+    if(color==COLOR_RED){
+      col_str=g_strdup_printf("color=\"%s\" bgcolor=\"%sFF\"",
+			      color_str[COLOR_WHITE],color_str[COLOR_RED]);
+    }
+    else{
+      col_str=g_strdup_printf("color=\"%s\"",
+			      color_str[color]);
+    }
+
     if(flag_bold){
       if(flag_slant){
-	tmp=g_strdup_printf("<span color=\"%s\"><b><i>%s</i></b></span>", 
-			    color_str[color], str);
+	tmp=g_strdup_printf("<span %s><b><i>%s</i></b></span>", 
+			    col_str, str);
       }
       else{
-	tmp=g_strdup_printf("<span color=\"%s\"><b>%s</b></span>", 
-			    color_str[color], str);
+	tmp=g_strdup_printf("<span %s><b>%s</b></span>", 
+			    col_str, str);
       }
     }
     else{
       if(flag_slant){
-	tmp=g_strdup_printf("<span color=\"%s\"><i>%s</i></span>", 
-			    color_str[color], str);
+	tmp=g_strdup_printf("<span %s><i>%s</i></span>", 
+			    col_str, str);
       }
       else{
-	tmp=g_strdup_printf("<span color=\"%s\">%s</span>", 
-			    color_str[color], str);
+	tmp=g_strdup_printf("<span %s>%s</span>", 
+			    col_str, str);
       }
     }
     
     gtk_label_set_markup(GTK_LABEL(widget), tmp);
     g_free(tmp);
+    g_free(col_str);
   }
 }
 

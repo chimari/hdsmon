@@ -75,6 +75,144 @@ gint absvalue();
 
 gboolean macopix_flag;
 
+void talk_col_fil(hds_param *hds){
+  gdouble vnew, vold;
+  gchar *tmp;
+  
+  switch(hds->isnum){
+  case 1:
+    vnew=(hds->filnum) ? ideal_colv1[1] : ideal_colv0[1];
+    vold=(hds->filnum_old) ? ideal_colv1[1] : ideal_colv0[1];
+    break;
+    
+  case 2:
+    vnew=(hds->filnum) ? ideal_colv1[3] : ideal_colv0[3];
+    vold=(hds->filnum_old) ? ideal_colv1[3] : ideal_colv0[3];
+    break;
+    
+  default:
+    vnew=(hds->filnum) ? ideal_colv1[0] : ideal_colv0[0];
+    vold=(hds->filnum_old) ? ideal_colv1[0] : ideal_colv0[0];
+    break;
+  }
+   
+  if(vold<vnew){
+    tmp=g_strdup_printf("コリメータを移動させる必要があるかもしれません。インクリメント値は マイナス %d です。", -(gint)((vold-vnew)/0.000342));
+  }
+  else{
+    tmp=g_strdup_printf("コリメータを移動させる必要があるかもしれません。インクリメント値は %d です。", (gint)((vold-vnew)/0.000342));
+  }
+
+  talk_message(tmp);
+  g_free(tmp);	      
+}
+
+void talk_col_is(hds_param *hds){
+  gdouble vnew, vold;
+  gchar *tmp;
+  
+  switch(hds->isnum){
+  case 1:
+    vnew=(hds->filnum) ? ideal_colv1[1] : ideal_colv0[1];
+    break;
+    
+  case 2:
+    vnew=(hds->filnum) ? ideal_colv1[3] : ideal_colv0[3];
+    break;
+    
+  default:
+    vnew=(hds->filnum) ? ideal_colv1[0] : ideal_colv0[0];
+    break;
+  }
+
+  switch(hds->isnum_old){
+  case 1:
+    vold=(hds->filnum) ? ideal_colv1[1] : ideal_colv0[1];
+    break;
+    
+  case 2:
+    vold=(hds->filnum) ? ideal_colv1[3] : ideal_colv0[3];
+    break;
+    
+  default:
+    vold=(hds->filnum) ? ideal_colv1[0] : ideal_colv0[0];
+    break;
+  }
+
+  if(vold<vnew){
+    tmp=g_strdup_printf("コリメータを移動させる必要があるかもしれません。インクリメント値は マイナス %d です。", -(gint)((vold-vnew)/0.000342));
+  }
+  else{
+    tmp=g_strdup_printf("コリメータを移動させる必要があるかもしれません。インクリメント値は %d です。", (gint)((vold-vnew)/0.000342));
+  }
+
+  talk_message(tmp);
+  g_free(tmp);	      
+}
+
+
+gboolean get_filnum(hds_param *hds, gboolean fl){
+  gint ret=0;
+
+  if(strncmp(hds->now.slit_filter1, "FREE", 4)!=0){
+    ret++;
+  }
+
+  if(strncmp(hds->now.slit_filter2, "FREE", 4)!=0){
+    ret++;
+  }
+
+  if(ret>1) ret=1;  // ignore 2 filters
+
+  if(fl){
+    hds->filnum_old=ret;
+    hds->filnum=ret;
+  }
+  else{
+    if(hds->filnum!=ret){
+      hds->filnum_old=hds->filnum;
+      hds->filnum=ret;
+      return(TRUE);
+    }
+  }
+
+  return(FALSE);
+}
+
+gboolean get_isnum(hds_param *hds, gboolean fl){
+  gint ret=0;
+
+  switch(hds->now.is_unit){
+  case 1:
+  case 2:
+    ret=1;
+    break;
+
+  case 3:
+    ret=2;
+    break;
+
+  defailt:
+    ret=0;
+    break;
+  }
+
+  if(fl){
+    hds->isnum_old=ret;
+    hds->isnum=ret;
+  }
+  else{
+    if(hds->isnum!=ret){
+      hds->isnum_old=hds->isnum;
+      hds->isnum=ret;
+      return(TRUE);
+    }
+  }
+
+  return(FALSE);
+}
+
+
 void usage(){
   g_print("usage : hdstalk [-m]\n");
   g_print("    -m : use macopix\n\n");
@@ -240,6 +378,7 @@ void param_read(hds_param *hds){
 
 void update_gui(hds_param *hds){
   gchar tmp[BUFFSIZE];
+  gint is_flag=FALSE, fil_flag=FALSE;
 
   // Update time
   g_print("%s\n",hds->update_time);
@@ -356,6 +495,10 @@ void update_gui(hds_param *hds){
     talk_message(tmp);
   }
 
+  if(hds->status_driving==0){
+    fil_flag=get_filnum(hds, FALSE);
+  }
+
   if((hds->old1.col_col!=hds->now.col_col)){
     switch(hds->now.col_col){
     case COL_RED:
@@ -440,6 +583,10 @@ void update_gui(hds_param *hds){
 	      hds->now.is_width*2.0,hds->now.is_slic);
       talk_message(tmp);
     }
+
+    if(hds->status_driving==0){
+      is_flag=get_isnum(hds, FALSE);
+    }
   }
 
 
@@ -461,6 +608,16 @@ void update_gui(hds_param *hds){
   set_oc(hds->now.cover_lens3, hds->old1.cover_lens3, "第三レンズカバー");
   set_oc(hds->now.cover_cam1, hds->old1.cover_cam1, "第一カメラミラーカバー");
   set_oc(hds->now.cover_cam2, hds->old1.cover_cam2, "第二カメラミラーカバー");
+
+  if(fil_flag){
+    talk_message("フィルター枚数の変更が確認されました");
+    talk_col_fil(hds);
+  }
+
+  if(is_flag){
+    talk_message("イメージスライサーユニットの変更が確認されました");
+    talk_col_is(hds);
+  }
 
   hds->old2=hds->old1;
   hds->old1=hds->now;
@@ -1278,6 +1435,8 @@ int main(int argc, char* argv[]){
   init_hds(&hds->old1);
   init_hds(&hds->old2);
   file_search(hds); /* 最初の一回 */
+  get_filnum(hds, TRUE);
+  get_isnum(hds, TRUE);
 
   hds->init_status=FALSE;
 
